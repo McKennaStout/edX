@@ -15,7 +15,7 @@ Each course lives in its own top-level folder using the following naming convent
 
 Examples:
 - `GTx.ISYE6501` — Georgia Tech
-- `UTx.CS303E` — University of Texas (example)
+- `TAMUx.CS303E` — Texas A&M University (example)
 
 Each course folder follows a standard internal structure:
 ```
