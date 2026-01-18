@@ -1,0 +1,31 @@
+---
+title: "McKenna Stout - Homework 1"
+---
+
+## Question 2.1 Answer
+
+A classification model would currently best fit my life, rather my exercise habits, and more specifically my running schedule.
+essentially:
+High Running Day vs Low Running Day based on work-related or my personal stress factors.
+
+The reason this would be useful is that marathon training depends on consistently hitting weekly mileage goals. 
+If I have many low running days in a row, that usually turns into a low running week. 
+Several low running weeks in a row would set me back from my planned training schedule, since I want to reach a certain total mileage by a specific date. 
+By classifying days as high or low running days, I could better understand how work and life stress affect my ability to stay on track over time.
+
+
+Observation: One Day
+Predictors:
+1. Number of Meetings that Day
+2. Number of Active Projects
+3. Number of Assigned Support Tickets
+4. Number of Upcoming Bills
+5. Day of Week (Workday vs Weekend)
+
+## Question 2.2
+
+Explanation in plain English.
+
+```{r}
+x <- 1
+```
