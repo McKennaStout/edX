@@ -1,7 +1,19 @@
 ---
 title: "McKenna Stout - Homework 1"  
-output: pdf_document  
+output:
+  pdf_document:
+    latex_engine: xelatex
 ---
+
+```{rsetup, include=FALSE}
+knitr::opts_chunk$set(
+  eval = TRUE,
+  echo = TRUE,
+  message = FALSE,
+  warning = FALSE
+)
+```
+
 
 ## Question 2.1 Answer  
 
