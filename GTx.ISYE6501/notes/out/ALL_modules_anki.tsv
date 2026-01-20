@@ -1,0 +1,206 @@
+Front	Back
+Module 1 — Analytics	"Definition (plain): Analytics is using data to answer questions and make better choices.
+
+Definition (formal): Analytics is the use of data, models, and computation to support better decisions and understanding.
+
+Support:
+- I'm Joel Sokol, Director of the Master of Science in Analytics degree at Georgia Tech and a professor in Georgia Tech's Stewart School of ISYE.
+- In my research and consulting, I've used analytics in a lot of different ways to help a lot of different people.
+- In almost all of that work, a critical key to success has been analytics modeling."
+Module 1 — Descriptive analytics	"Definition (plain): Descriptive analytics tells you what happened.
+
+Definition (formal): Descriptive analytics summarizes what happened using reporting, aggregation, and visualization."
+Module 1 — Predictive analytics	"Definition (plain): Predictive analytics predicts what will happen.
+
+Definition (formal): Predictive analytics uses historical data to estimate or forecast unknown outcomes.
+
+Support:
+- Analytics can also answer predictive questions, questions that ask what's going to happen in the future."
+Module 1 — Prescriptive analytics	"Definition (plain): Prescriptive analytics tells you what to do to get the best result.
+
+Definition (formal): Prescriptive analytics recommends actions by optimizing objectives under constraints.
+
+Support:
+- On the left is a stream of models, lots of different mathematical approaches to solving analytics problems, machine learning, regression, optimization, and many others sprinkled with examples and situations where they're each valuable."
+Module 1 — Supervised learning	"Definition (plain): You learn from examples where the right answer is already known.
+
+Definition (formal): Supervised learning learns a mapping from inputs (features) to known outputs (labels) using labeled examples."
+Module 1 — Unsupervised learning	"Definition (plain): You find patterns without being told the right answers.
+
+Definition (formal): Unsupervised learning finds structure in data without labeled outcomes (e.g., clustering)."
+Module 2 — Classification	"Definition (plain): Classification is sorting things into categories based on their measurements.
+
+Definition (formal): Classification is the task of assigning an input to one of a fixed set of categories using its features.
+
+Support:
+- in later lessons, we'll see a basic model for solving classification problems.
+- Classification and analytics has the same meaning as it does in everyday life putting things into categories.
+- The simplest examples of classification are when there are two categories, which are often just yes and no."
+Module 2 — Classifier	"Definition (plain): A classifier is the rule the computer uses to pick a category.
+
+Definition (formal): A classifier is a model or rule that maps feature vectors to class labels.
+
+Support:
+- The lower classifier would suggest that we give this applicant a loan, while the higher classifier would suggest that we deny the loan application.
+- we need what's called a soft classifier, one that gives us good as separation as possible rather than a hard classifier that separates perfectly.
+- Here's a classifier that minimizes the number of incorrectly classified points."
+Module 2 — Binary classification	"Definition (plain): Binary classification is a yes/no (two-choice) classification.
+
+Definition (formal): Binary classification predicts one of two possible class labels.
+
+Support:
+- finally, you might be wondering whether there are other approaches for classification, especially when there are more than two classes.
+- This works easily not just for two classes, but also for more."
+Module 2 — Multiclass classification	"Definition (plain): Multiclass classification chooses among 3+ categories.
+
+Definition (formal): Multiclass classification predicts one of three or more class labels."
+Module 2 — Features	"Definition (plain): Features are the pieces of information you feed into the model.
+
+Definition (formal): Features are measurable attributes used as inputs to a model.
+
+Support:
+- Based on those attributes of previous loan recipients and the bank's observation of whether each loan was repaid or not, the bank can then build a model to help classify future applicants.
+- Suppose we thought we needed two attributes to classify applicants, and the data looks like this.
+- They're often called attributes or features and depending on how the data is being used, they might also be called covariates or predictors."
+Module 2 — Label (class label)	"Definition (plain): The label is the correct category name.
+
+Definition (formal): A label is the target category assigned to an example (the output to predict).
+
+Support:
+- We won't get into the math in this class.
+- In this example, each color is a different class."
+Module 2 — Training set	"Definition (plain): Training data is what the model learns from.
+
+Definition (formal): The training set is the labeled data used to fit a model."
+Module 2 — Test set	"Definition (plain): Test data checks how well the model works on new data.
+
+Definition (formal): The test set is held-out data used only to evaluate a final model."
+Module 2 — Validation set	"Definition (plain): Validation data helps you choose settings or compare models.
+
+Definition (formal): A validation set is held-out data used during model selection/tuning."
+Module 2 — Decision boundary	"Definition (plain): It’s the line/surface that divides one category from another.
+
+Definition (formal): A decision boundary separates regions of feature space assigned to different classes."
+Module 2 — Misclassification	"Definition (plain): A misclassification is a wrong category guess.
+
+Definition (formal): Misclassification occurs when the predicted label differs from the true label.
+
+Support:
+- It would take a much bigger error in the data to cause misclassification.
+- We can use the same approach for soft classification too, given that it's impossible to separate with no mistakes, we might be more willing to accept one type of mistake than another.
+- The further the wrongly classified point is from the line, the bigger mistake we've made."
+Module 2 — Cost-sensitive classification	"Definition (plain): Some mistakes are worse than others, so you treat them differently.
+
+Definition (formal): Cost-sensitive classification accounts for unequal costs of different error types."
+Module 2 — k-Nearest Neighbors (KNN)	"Definition (plain): Look at the closest examples and vote on the category.
+
+Definition (formal): KNN classifies a point by taking the majority label among its k closest training points under a distance metric.
+
+Support:
+- This model is called the k nearest neighbor or KNN model and the basic idea is simple.
+- Usually the number of points we're using is denoted by K, which is where the name K nearest neighbor comes from.
+- The intuition and math behind the support vector machine approach to classification and a different approach to k nearest neighbors method of classification."
+Module 2 — Distance metric	"Definition (plain): A distance metric is how you measure closeness between two examples.
+
+Definition (formal): A distance metric defines how ‘close’ two points are in feature space (e.g., Euclidean distance).
+
+Support:
+- In other words, we need to find values of a_0 through a_n so that the margin, the distance between the lines is greatest.
+- The distance between the lines could be maximized by minimizing the sum over all factors j of a_j squared.
+- First, when we're looking for the k closest points, there's more than one way to measure distance."
+Module 2 — Feature scaling	"Definition (plain): Scaling puts inputs on similar ranges so one big-number feature doesn’t dominate.
+
+Definition (formal): Feature scaling rescales features so magnitudes are comparable, often improving distance-based and margin-based methods.
+
+Support:
+- We use the one for scaling, but it could be any number.
+- Let's start off with a situation where scaling is important.
+- For example, suppose we want all of our data to be between 0 and 1, that's the most common scaling to use."
+Module 2 — Standardization	"Definition (plain): Standardization turns values into ‘how many standard deviations from average’.
+
+Definition (formal): Standardization rescales a feature to have mean 0 and standard deviation 1 (z-score).
+
+Support:
+- when would you want to use scaling and when would you want to use standardization?
+- On the other hand, some models seem to work better with standardization."
+Module 2 — Support Vector Machine (SVM)	"Definition (plain): SVM draws the best separating line by keeping the widest gap between groups.
+
+Definition (formal): An SVM finds a separating hyperplane that maximizes the margin between classes; soft-margin allows some errors.
+
+Support:
+- This model is called the support vector machine model.
+- This approach to classification is called a support vector machine or SVM.
+- If you want to know where the name comes from, go ahead and watch the where does the name support vector machine come from lesson."
+Module 2 — Hyperplane	"Definition (plain): A hyperplane is a ‘line’ that separates groups, even in many dimensions.
+
+Definition (formal): A hyperplane is a linear decision boundary in a possibly high-dimensional space."
+Module 2 — Margin	"Definition (plain): Margin is the safety gap between the boundary and the closest points.
+
+Definition (formal): Margin is the distance from the decision boundary to the nearest training points; SVM maximizes it.
+
+Support:
+- We want to find values of a_0, a_1 up to a_n that classify the points correctly and have the maximum gap or margin between the parallel lines.
+- if we can minimize the sum from j equals 1 to n of all the a_ij squared we'll maximize the margin.
+- In other words, we need to find values of a_0 through a_n so that the margin, the distance between the lines is greatest."
+Module 2 — Kernel (kernel trick)	"Definition (plain): A kernel is a math trick that lets a straight-line method draw curved boundaries.
+
+Definition (formal): A kernel implicitly maps data into a higher-dimensional space so a linear separator can represent nonlinear boundaries.
+
+Support:
+- In fact, SVM can be generalized using kernel methods that allow for non-linear classifiers.
+- software like R has a kernel SVM function that you can use to solve for both linear and non-linear classifiers."
+Module 3 — Model validation	"Definition (plain): Validation checks if your model will work on unseen data.
+
+Definition (formal): Model validation estimates how well a trained model will generalize to new data.
+
+Support:
+- >> In a previous lesson we talked about validation, which is measuring the effectiveness of a model.
+- That way if the first set, the training set had unique random effects that the classifier was designed for, we wouldn't be counting those benefits when we measure effectiveness on the second set called the validation set.
+- As you can see in this example, this line classifies 90% of the points correctly in the training set, but only 80% of the points correctly in the validation set."
+Module 3 — Overfitting	"Definition (plain): Overfitting is memorizing the training set instead of learning the real pattern.
+
+Definition (formal): Overfitting occurs when a model fits noise in the training data and performs poorly on new data."
+Module 3 — Underfitting	"Definition (plain): Underfitting is being too simple to learn the pattern.
+
+Definition (formal): Underfitting occurs when a model is too simple to capture the true structure in the data."
+Module 3 — Train/validation/test split	"Definition (plain): You learn on one part, tune on another, and score on a final untouched part.
+
+Definition (formal): A data split partitions data into training, validation, and test sets for fitting, tuning, and final evaluation."
+Module 3 — Cross-validation	"Definition (plain): Cross-validation tests the model multiple times on different splits to get a more stable score.
+
+Definition (formal): Cross-validation repeatedly splits data into train/validation folds to reduce evaluation variance and tune models more reliably.
+
+Support:
+- It's called cross-validation and we'll see what it is in a future lesson.
+- Cross-validation is a way to avoid that problem.
+- We have k-means, k nearest neighbor, and now k-fold cross-validation."
+Module 3 — Bias-variance tradeoff	"Definition (plain): Simple models miss patterns; complex models chase noise. You balance the two.
+
+Definition (formal): Bias-variance tradeoff describes how model complexity affects systematic error (bias) and sensitivity to data noise (variance)."
+Module 4 — Clustering	"Definition (plain): Clustering groups similar things together without labels.
+
+Definition (formal): Clustering groups data points into clusters so points in the same cluster are more similar than points in different clusters.
+
+Support:
+- In analytics, Clustering means taking a set of data points and dividing them up into groups so each group contains points that are close to each other or similar.
+- Here's a graph of some points and a natural way to group them into three clusters so that for each cluster, the points in each cluster are close to each other.
+- Let's see some examples of when clustering might be useful."
+Module 4 — k-Means	"Definition (plain): k-means picks k centers and assigns points to the closest center, repeating until it settles.
+
+Definition (formal): k-means partitions data into k clusters by minimizing within-cluster sum of squared distances to cluster centers.
+
+Support:
+- To see how the k-means algorithm works, let's look at an example of clustering.
+- As you can see in the picture, the clusters the k-means algorithm found are pretty much what we might've picked out by hand.
+- when you have a lot of attributes, that's a lot of dimensions and we need something like k-means to find a good clustering."
+Module 4 — Cluster centroid	"Definition (plain): The centroid is the ‘average point’ of a cluster.
+
+Definition (formal): A centroid is the mean of points assigned to a cluster (the cluster center in k-means).
+
+Support:
+- let's use z_kj to denote the jth dimension coordinate of cluster center k.
+- What we'd like to find is a set of k cluster centers and assignments of each data point to a cluster center to minimize the total distance from each data point to its cluster center.
+- we temporarily assign each data point to the cluster center it's closest to."
+Module 4 — Within-cluster sum of squares (WCSS)	"Definition (plain): WCSS measures how spread out points are inside clusters.
+
+Definition (formal): WCSS measures cluster tightness by summing squared distances of points to their assigned centroids."

@@ -1,0 +1,82 @@
+[
+  {
+    "module": 1,
+    "term": "Analytics",
+    "formal": "Analytics is the use of data, models, and computation to support better decisions and understanding.",
+    "plain": "Analytics is using data to answer questions and make better choices.",
+    "support": [
+      "I'm Joel Sokol, Director of the Master of Science in Analytics degree at Georgia Tech and a professor in Georgia Tech's Stewart School of ISYE.",
+      "In my research and consulting, I've used analytics in a lot of different ways to help a lot of different people.",
+      "In almost all of that work, a critical key to success has been analytics modeling."
+    ],
+    "lectures_seen": [
+      1,
+      2,
+      3
+    ]
+  },
+  {
+    "module": 1,
+    "term": "Descriptive analytics",
+    "formal": "Descriptive analytics summarizes what happened using reporting, aggregation, and visualization.",
+    "plain": "Descriptive analytics tells you what happened.",
+    "support": [],
+    "lectures_seen": [
+      1,
+      2,
+      3
+    ]
+  },
+  {
+    "module": 1,
+    "term": "Predictive analytics",
+    "formal": "Predictive analytics uses historical data to estimate or forecast unknown outcomes.",
+    "plain": "Predictive analytics predicts what will happen.",
+    "support": [
+      "Analytics can also answer predictive questions, questions that ask what's going to happen in the future."
+    ],
+    "lectures_seen": [
+      1,
+      2,
+      3
+    ]
+  },
+  {
+    "module": 1,
+    "term": "Prescriptive analytics",
+    "formal": "Prescriptive analytics recommends actions by optimizing objectives under constraints.",
+    "plain": "Prescriptive analytics tells you what to do to get the best result.",
+    "support": [
+      "On the left is a stream of models, lots of different mathematical approaches to solving analytics problems, machine learning, regression, optimization, and many others sprinkled with examples and situations where they're each valuable."
+    ],
+    "lectures_seen": [
+      1,
+      2,
+      3
+    ]
+  },
+  {
+    "module": 1,
+    "term": "Supervised learning",
+    "formal": "Supervised learning learns a mapping from inputs (features) to known outputs (labels) using labeled examples.",
+    "plain": "You learn from examples where the right answer is already known.",
+    "support": [],
+    "lectures_seen": [
+      1,
+      2,
+      3
+    ]
+  },
+  {
+    "module": 1,
+    "term": "Unsupervised learning",
+    "formal": "Unsupervised learning finds structure in data without labeled outcomes (e.g., clustering).",
+    "plain": "You find patterns without being told the right answers.",
+    "support": [],
+    "lectures_seen": [
+      1,
+      2,
+      3
+    ]
+  }
+]

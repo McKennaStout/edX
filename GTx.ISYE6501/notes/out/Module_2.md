@@ -1,0 +1,150 @@
+# Module 2 — Key concepts
+
+## Classification
+
+- Definition (plain): Classification is sorting things into categories based on their measurements.
+- Definition (formal): Classification is the task of assigning an input to one of a fixed set of categories using its features.
+- Support (professor phrasing):
+  - in later lessons, we'll see a basic model for solving classification problems.
+  - Classification and analytics has the same meaning as it does in everyday life putting things into categories.
+  - The simplest examples of classification are when there are two categories, which are often just yes and no.
+
+## Classifier
+
+- Definition (plain): A classifier is the rule the computer uses to pick a category.
+- Definition (formal): A classifier is a model or rule that maps feature vectors to class labels.
+- Support (professor phrasing):
+  - The lower classifier would suggest that we give this applicant a loan, while the higher classifier would suggest that we deny the loan application.
+  - we need what's called a soft classifier, one that gives us good as separation as possible rather than a hard classifier that separates perfectly.
+  - Here's a classifier that minimizes the number of incorrectly classified points.
+
+## Binary classification
+
+- Definition (plain): Binary classification is a yes/no (two-choice) classification.
+- Definition (formal): Binary classification predicts one of two possible class labels.
+- Support (professor phrasing):
+  - finally, you might be wondering whether there are other approaches for classification, especially when there are more than two classes.
+  - This works easily not just for two classes, but also for more.
+
+## Multiclass classification
+
+- Definition (plain): Multiclass classification chooses among 3+ categories.
+- Definition (formal): Multiclass classification predicts one of three or more class labels.
+
+## Features
+
+- Definition (plain): Features are the pieces of information you feed into the model.
+- Definition (formal): Features are measurable attributes used as inputs to a model.
+- Support (professor phrasing):
+  - Based on those attributes of previous loan recipients and the bank's observation of whether each loan was repaid or not, the bank can then build a model to help classify future applicants.
+  - Suppose we thought we needed two attributes to classify applicants, and the data looks like this.
+  - They're often called attributes or features and depending on how the data is being used, they might also be called covariates or predictors.
+
+## Label (class label)
+
+- Definition (plain): The label is the correct category name.
+- Definition (formal): A label is the target category assigned to an example (the output to predict).
+- Support (professor phrasing):
+  - We won't get into the math in this class.
+  - In this example, each color is a different class.
+
+## Training set
+
+- Definition (plain): Training data is what the model learns from.
+- Definition (formal): The training set is the labeled data used to fit a model.
+
+## Test set
+
+- Definition (plain): Test data checks how well the model works on new data.
+- Definition (formal): The test set is held-out data used only to evaluate a final model.
+
+## Validation set
+
+- Definition (plain): Validation data helps you choose settings or compare models.
+- Definition (formal): A validation set is held-out data used during model selection/tuning.
+
+## Decision boundary
+
+- Definition (plain): It’s the line/surface that divides one category from another.
+- Definition (formal): A decision boundary separates regions of feature space assigned to different classes.
+
+## Misclassification
+
+- Definition (plain): A misclassification is a wrong category guess.
+- Definition (formal): Misclassification occurs when the predicted label differs from the true label.
+- Support (professor phrasing):
+  - It would take a much bigger error in the data to cause misclassification.
+  - We can use the same approach for soft classification too, given that it's impossible to separate with no mistakes, we might be more willing to accept one type of mistake than another.
+  - The further the wrongly classified point is from the line, the bigger mistake we've made.
+
+## Cost-sensitive classification
+
+- Definition (plain): Some mistakes are worse than others, so you treat them differently.
+- Definition (formal): Cost-sensitive classification accounts for unequal costs of different error types.
+
+## k-Nearest Neighbors (KNN)
+
+- Definition (plain): Look at the closest examples and vote on the category.
+- Definition (formal): KNN classifies a point by taking the majority label among its k closest training points under a distance metric.
+- Support (professor phrasing):
+  - This model is called the k nearest neighbor or KNN model and the basic idea is simple.
+  - Usually the number of points we're using is denoted by K, which is where the name K nearest neighbor comes from.
+  - The intuition and math behind the support vector machine approach to classification and a different approach to k nearest neighbors method of classification.
+
+## Distance metric
+
+- Definition (plain): A distance metric is how you measure closeness between two examples.
+- Definition (formal): A distance metric defines how ‘close’ two points are in feature space (e.g., Euclidean distance).
+- Support (professor phrasing):
+  - In other words, we need to find values of a_0 through a_n so that the margin, the distance between the lines is greatest.
+  - The distance between the lines could be maximized by minimizing the sum over all factors j of a_j squared.
+  - First, when we're looking for the k closest points, there's more than one way to measure distance.
+
+## Feature scaling
+
+- Definition (plain): Scaling puts inputs on similar ranges so one big-number feature doesn’t dominate.
+- Definition (formal): Feature scaling rescales features so magnitudes are comparable, often improving distance-based and margin-based methods.
+- Support (professor phrasing):
+  - We use the one for scaling, but it could be any number.
+  - Let's start off with a situation where scaling is important.
+  - For example, suppose we want all of our data to be between 0 and 1, that's the most common scaling to use.
+
+## Standardization
+
+- Definition (plain): Standardization turns values into ‘how many standard deviations from average’.
+- Definition (formal): Standardization rescales a feature to have mean 0 and standard deviation 1 (z-score).
+- Support (professor phrasing):
+  - when would you want to use scaling and when would you want to use standardization?
+  - On the other hand, some models seem to work better with standardization.
+
+## Support Vector Machine (SVM)
+
+- Definition (plain): SVM draws the best separating line by keeping the widest gap between groups.
+- Definition (formal): An SVM finds a separating hyperplane that maximizes the margin between classes; soft-margin allows some errors.
+- Support (professor phrasing):
+  - This model is called the support vector machine model.
+  - This approach to classification is called a support vector machine or SVM.
+  - If you want to know where the name comes from, go ahead and watch the where does the name support vector machine come from lesson.
+
+## Hyperplane
+
+- Definition (plain): A hyperplane is a ‘line’ that separates groups, even in many dimensions.
+- Definition (formal): A hyperplane is a linear decision boundary in a possibly high-dimensional space.
+
+## Margin
+
+- Definition (plain): Margin is the safety gap between the boundary and the closest points.
+- Definition (formal): Margin is the distance from the decision boundary to the nearest training points; SVM maximizes it.
+- Support (professor phrasing):
+  - We want to find values of a_0, a_1 up to a_n that classify the points correctly and have the maximum gap or margin between the parallel lines.
+  - if we can minimize the sum from j equals 1 to n of all the a_ij squared we'll maximize the margin.
+  - In other words, we need to find values of a_0 through a_n so that the margin, the distance between the lines is greatest.
+
+## Kernel (kernel trick)
+
+- Definition (plain): A kernel is a math trick that lets a straight-line method draw curved boundaries.
+- Definition (formal): A kernel implicitly maps data into a higher-dimensional space so a linear separator can represent nonlinear boundaries.
+- Support (professor phrasing):
+  - In fact, SVM can be generalized using kernel methods that allow for non-linear classifiers.
+  - software like R has a kernel SVM function that you can use to solve for both linear and non-linear classifiers.
+

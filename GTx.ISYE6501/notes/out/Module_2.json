@@ -1,0 +1,390 @@
+[
+  {
+    "module": 2,
+    "term": "Classification",
+    "formal": "Classification is the task of assigning an input to one of a fixed set of categories using its features.",
+    "plain": "Classification is sorting things into categories based on their measurements.",
+    "support": [
+      "in later lessons, we'll see a basic model for solving classification problems.",
+      "Classification and analytics has the same meaning as it does in everyday life putting things into categories.",
+      "The simplest examples of classification are when there are two categories, which are often just yes and no."
+    ],
+    "lectures_seen": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+    ]
+  },
+  {
+    "module": 2,
+    "term": "Classifier",
+    "formal": "A classifier is a model or rule that maps feature vectors to class labels.",
+    "plain": "A classifier is the rule the computer uses to pick a category.",
+    "support": [
+      "The lower classifier would suggest that we give this applicant a loan, while the higher classifier would suggest that we deny the loan application.",
+      "we need what's called a soft classifier, one that gives us good as separation as possible rather than a hard classifier that separates perfectly.",
+      "Here's a classifier that minimizes the number of incorrectly classified points."
+    ],
+    "lectures_seen": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+    ]
+  },
+  {
+    "module": 2,
+    "term": "Binary classification",
+    "formal": "Binary classification predicts one of two possible class labels.",
+    "plain": "Binary classification is a yes/no (two-choice) classification.",
+    "support": [
+      "finally, you might be wondering whether there are other approaches for classification, especially when there are more than two classes.",
+      "This works easily not just for two classes, but also for more."
+    ],
+    "lectures_seen": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+    ]
+  },
+  {
+    "module": 2,
+    "term": "Multiclass classification",
+    "formal": "Multiclass classification predicts one of three or more class labels.",
+    "plain": "Multiclass classification chooses among 3+ categories.",
+    "support": [],
+    "lectures_seen": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+    ]
+  },
+  {
+    "module": 2,
+    "term": "Features",
+    "formal": "Features are measurable attributes used as inputs to a model.",
+    "plain": "Features are the pieces of information you feed into the model.",
+    "support": [
+      "Based on those attributes of previous loan recipients and the bank's observation of whether each loan was repaid or not, the bank can then build a model to help classify future applicants.",
+      "Suppose we thought we needed two attributes to classify applicants, and the data looks like this.",
+      "They're often called attributes or features and depending on how the data is being used, they might also be called covariates or predictors."
+    ],
+    "lectures_seen": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+    ]
+  },
+  {
+    "module": 2,
+    "term": "Label (class label)",
+    "formal": "A label is the target category assigned to an example (the output to predict).",
+    "plain": "The label is the correct category name.",
+    "support": [
+      "We won't get into the math in this class.",
+      "In this example, each color is a different class."
+    ],
+    "lectures_seen": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+    ]
+  },
+  {
+    "module": 2,
+    "term": "Training set",
+    "formal": "The training set is the labeled data used to fit a model.",
+    "plain": "Training data is what the model learns from.",
+    "support": [],
+    "lectures_seen": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+    ]
+  },
+  {
+    "module": 2,
+    "term": "Test set",
+    "formal": "The test set is held-out data used only to evaluate a final model.",
+    "plain": "Test data checks how well the model works on new data.",
+    "support": [],
+    "lectures_seen": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+    ]
+  },
+  {
+    "module": 2,
+    "term": "Validation set",
+    "formal": "A validation set is held-out data used during model selection/tuning.",
+    "plain": "Validation data helps you choose settings or compare models.",
+    "support": [],
+    "lectures_seen": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+    ]
+  },
+  {
+    "module": 2,
+    "term": "Decision boundary",
+    "formal": "A decision boundary separates regions of feature space assigned to different classes.",
+    "plain": "It’s the line/surface that divides one category from another.",
+    "support": [],
+    "lectures_seen": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+    ]
+  },
+  {
+    "module": 2,
+    "term": "Misclassification",
+    "formal": "Misclassification occurs when the predicted label differs from the true label.",
+    "plain": "A misclassification is a wrong category guess.",
+    "support": [
+      "It would take a much bigger error in the data to cause misclassification.",
+      "We can use the same approach for soft classification too, given that it's impossible to separate with no mistakes, we might be more willing to accept one type of mistake than another.",
+      "The further the wrongly classified point is from the line, the bigger mistake we've made."
+    ],
+    "lectures_seen": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+    ]
+  },
+  {
+    "module": 2,
+    "term": "Cost-sensitive classification",
+    "formal": "Cost-sensitive classification accounts for unequal costs of different error types.",
+    "plain": "Some mistakes are worse than others, so you treat them differently.",
+    "support": [],
+    "lectures_seen": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+    ]
+  },
+  {
+    "module": 2,
+    "term": "k-Nearest Neighbors (KNN)",
+    "formal": "KNN classifies a point by taking the majority label among its k closest training points under a distance metric.",
+    "plain": "Look at the closest examples and vote on the category.",
+    "support": [
+      "This model is called the k nearest neighbor or KNN model and the basic idea is simple.",
+      "Usually the number of points we're using is denoted by K, which is where the name K nearest neighbor comes from.",
+      "The intuition and math behind the support vector machine approach to classification and a different approach to k nearest neighbors method of classification."
+    ],
+    "lectures_seen": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+    ]
+  },
+  {
+    "module": 2,
+    "term": "Distance metric",
+    "formal": "A distance metric defines how ‘close’ two points are in feature space (e.g., Euclidean distance).",
+    "plain": "A distance metric is how you measure closeness between two examples.",
+    "support": [
+      "In other words, we need to find values of a_0 through a_n so that the margin, the distance between the lines is greatest.",
+      "The distance between the lines could be maximized by minimizing the sum over all factors j of a_j squared.",
+      "First, when we're looking for the k closest points, there's more than one way to measure distance."
+    ],
+    "lectures_seen": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+    ]
+  },
+  {
+    "module": 2,
+    "term": "Feature scaling",
+    "formal": "Feature scaling rescales features so magnitudes are comparable, often improving distance-based and margin-based methods.",
+    "plain": "Scaling puts inputs on similar ranges so one big-number feature doesn’t dominate.",
+    "support": [
+      "We use the one for scaling, but it could be any number.",
+      "Let's start off with a situation where scaling is important.",
+      "For example, suppose we want all of our data to be between 0 and 1, that's the most common scaling to use."
+    ],
+    "lectures_seen": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+    ]
+  },
+  {
+    "module": 2,
+    "term": "Standardization",
+    "formal": "Standardization rescales a feature to have mean 0 and standard deviation 1 (z-score).",
+    "plain": "Standardization turns values into ‘how many standard deviations from average’.",
+    "support": [
+      "when would you want to use scaling and when would you want to use standardization?",
+      "On the other hand, some models seem to work better with standardization."
+    ],
+    "lectures_seen": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+    ]
+  },
+  {
+    "module": 2,
+    "term": "Support Vector Machine (SVM)",
+    "formal": "An SVM finds a separating hyperplane that maximizes the margin between classes; soft-margin allows some errors.",
+    "plain": "SVM draws the best separating line by keeping the widest gap between groups.",
+    "support": [
+      "This model is called the support vector machine model.",
+      "This approach to classification is called a support vector machine or SVM.",
+      "If you want to know where the name comes from, go ahead and watch the where does the name support vector machine come from lesson."
+    ],
+    "lectures_seen": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+    ]
+  },
+  {
+    "module": 2,
+    "term": "Hyperplane",
+    "formal": "A hyperplane is a linear decision boundary in a possibly high-dimensional space.",
+    "plain": "A hyperplane is a ‘line’ that separates groups, even in many dimensions.",
+    "support": [],
+    "lectures_seen": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+    ]
+  },
+  {
+    "module": 2,
+    "term": "Margin",
+    "formal": "Margin is the distance from the decision boundary to the nearest training points; SVM maximizes it.",
+    "plain": "Margin is the safety gap between the boundary and the closest points.",
+    "support": [
+      "We want to find values of a_0, a_1 up to a_n that classify the points correctly and have the maximum gap or margin between the parallel lines.",
+      "if we can minimize the sum from j equals 1 to n of all the a_ij squared we'll maximize the margin.",
+      "In other words, we need to find values of a_0 through a_n so that the margin, the distance between the lines is greatest."
+    ],
+    "lectures_seen": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+    ]
+  },
+  {
+    "module": 2,
+    "term": "Kernel (kernel trick)",
+    "formal": "A kernel implicitly maps data into a higher-dimensional space so a linear separator can represent nonlinear boundaries.",
+    "plain": "A kernel is a math trick that lets a straight-line method draw curved boundaries.",
+    "support": [
+      "In fact, SVM can be generalized using kernel methods that allow for non-linear classifiers.",
+      "software like R has a kernel SVM function that you can use to solve for both linear and non-linear classifiers."
+    ],
+    "lectures_seen": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+    ]
+  }
+]
