@@ -13,7 +13,7 @@ knitr::opts_chunk$set(
   warning = FALSE
 )
 ```
-
+<!-- ## 01/22/2026 Update: I recieved a 100 on this assignment! -->
 
 ## Question 2.1 Answer  
 <!-- ## rmarkdown::render("edX/GTx.ISYE6501/homework/homework1_answers.Rmd") -->
