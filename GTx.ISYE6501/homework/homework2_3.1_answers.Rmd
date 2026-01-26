@@ -1,0 +1,275 @@
+---
+title: "Homework 2 (ISYE 6501) — Question 3.1"
+output:
+  pdf_document:
+    latex_engine: xelatex
+---
+
+## Question 3.1 Answer
+
+Sorry in advance to my peer reviewers! (ᵕ—ᴗ—) I like to write out my reasoning and can be... wordy... But I will try to be more brief this time!
+<!-- ## rmarkdown::render("edX/GTx.ISYE6501/homework/homework2_3.1_answers.Rmd") -->
+
+---
+
+First, I need to set up my environment!  
+`rm(list=ls())` is something I usually run at the very beginning of my time within R to ensure I am starting fresh and not somehow meshing variables I've used before on accident, possibly.  
+(To be honest though, I don't actually know if that is true. Does running that really clear my memory? If anyone reviewing my code knows, please let me know.)  
+```{r setup, message=FALSE, warning=FALSE}
+ rm(list=ls())  # Uncomment only if starting fresh
+
+library(kknn)
+library(caret)
+library(kernlab)
+
+set.seed(16)  # Keep fixed for reproducibility, I chose 16 because it's my favorite number
+```
+`set.seed(16)` is just "locking in" my random number generator so that you (peers) can see the same results as me, since this makes it so that it produces the same sequence of 'random' numbers every time I (or a peer) knit this file.  
+The rest should look familiar, just loading in `kknn`, `kernlab`, and although the homework does not specify a package for splitting or scaling the data, I use `caret` to create better balanced data splits than I could create on my own, and also to scale predictors using only the training set, avoiding data leakage.
+```{r load-data, echo=FALSE} 
+df <- read.delim(
+  "C:/Users/mstout/OneDrive - AANP/Documents/Workspace.MAIN/edX/GTx.ISYE6501/data/Homework2_ISYE6501/data 3.1/credit_card_data-headers.txt",
+  header = TRUE
+)
+
+dim(df) # forcing it to show me the dimensions of the table
+head(df, 16) # forcing it to show me the first 16 rows to ensure data quality
+```
+Second, I load the credit card dataset and confirm the dimensions (654 rows, 11 columns), and a few rows of the data. This is just a quick check I always like to do to make sure the file loaded correctly.  
+
+Now that the data is loaded in, and the libraries are set correctly, we can start for real!  
+I wanted to try a different way of making `knn` this time, as I saw a lot of variations during office hours, and reading different ways to go about scripting it online.  
+Although I did not directly take any one specific line of code, I did use the code shown during office hours, and from https://www.datacamp.com/tutorial/k-nearest-neighbors-knn-classification-with-r-tutorial as reference material.  
+```{r response}
+df$R1 <- factor(df$R1, levels = c(0, 1))
+table(df$R1)
+```
+`R1` is the response variable, that is just the title of the column given in the dataset, so I will use that as my variable name as well.  
+But, even though it is coded as 0/1, this is a classification problem, so I explicitly have to convert it to a factor.
+```{r binary-factors}
+bin_cols <- c("A1","A9","A10","A11","A12")
+bin_cols <- intersect(bin_cols, names(df))
+
+for (cc in bin_cols) {
+  df[[cc]] <- factor(df[[cc]])
+}
+
+str(df)
+```
+Here I am just creating a vector of column names, and ensuring `bin_cols` is only going to use actual, real column names (I am OCD).  
+Then I run a loop to get the column whose name is stored in the variable `cc` to convert it to a factor. I do this so it knows it is not a continuous numerical value.  
+```{r scale}
+num_cols <- names(df)[sapply(df, is.numeric)]
+num_cols <- setdiff(num_cols, "R1")
+
+df[num_cols] <- scale(df[num_cols])
+```
+Now I run this, and set `num_cols` as a variable that includes all numeric columns, except for `R1` which is the response column, so that I can apply `scale()`.
+```{r formula}
+form <- as.formula(
+  paste("R1 ~", paste(setdiff(names(df), "R1"), collapse = " + "))
+)
+```
+Running this just constructs the formula `R1 ~ A1 + A2 + ... + A10`.  
+
+This block of code is doing `10-fold` cross-validation to decide the reasonable value of `k` for the `knn` classifier.  
+The data is first split into 10 folds, and then for each value of `k` from [1:21], the model is trained on 9 folds and evaluated on the remaining fold (90%/10%).  
+I chose [1:21] because in the last homework, with this same data, we discovered that `k = (12, 15)`, and although it might be wrong to make assumptions since we are using a different method here, I cannot imagine that `k` will change more than 5 digits.  
+(Is it cheating to use knowledge we already know from Homework 1 to make assumptions on Homework 2? I hope not!)  
+This process is repeated so that each fold is used as the test set once, and the accuracies are averaged.  
+The value of `k` that gives the highest average accuracy is selected as the best `k` (`best_k_cv`), and both the selected `k` and its cross-validated accuracy are reported.
+```{r knn-cv, message=FALSE, warning=FALSE}
+K <- 10
+fold_id <- sample(rep(1:K, length.out = nrow(df)))
+k_grid <- 1:21
+
+cv_acc <- sapply(k_grid, function(k) {
+
+  fold_acc <- sapply(1:K, function(f) {
+    tr <- df[fold_id != f, , drop = FALSE]
+    te <- df[fold_id == f, , drop = FALSE]
+
+    fit <- kknn(
+      form,
+      train = tr, # training
+      test  = te, # testing
+      k = k,
+      distance = 2,
+      scale = FALSE
+    )
+
+    pred <- fitted(fit)
+    mean(pred == te$R1)
+  })
+
+  mean(fold_acc)
+})
+
+best_k_cv <- k_grid[which.max(cv_acc)]
+best_k_cv
+max(cv_acc)
+```
+
+Based on `10-fold` cross-validation, a `knn` classifier with `k = 18` does well, achieving [0.8500466] (85%) classification accuracy!  
+I would consider this a good classifier for Part 1!  
+Though this surprised me a little bit, I thought it would actually be a lot closer to Homework 1 `k = (12, 15)`, but it just goes to show how different methods of validation can change results ever so slightly.  
+(I also know that small <4 digit changes between k values as small as these really don't have that much of an overall or substantial effect at least on this dataset, I'm sure any k value between [15:20] would do alright!)  
+
+Now, onto splitting the data into the recommended (or just most common practice): [60%] training, [20%] validation, and [20%] test.  
+I once again use `set.seed(16)` to fix the randomness so the same rows are split each time (I am unsure if I really need to run this again here but just to be safe!)  
+'createDataPartition()' splits the data while preserving class balance in 'R1`, and the first split was hard-coded to create the 60% training set, with the remaining 40% split evenly into the validation and test sets (20% each)  
+and as always, my favorite simple sanity check, I used dim() to check to confirm the split sizes were what I expected... and they were!
+```{r knn-split, message=FALSE, warning=FALSE}
+set.seed(16) # Keep fixed for reproducibility, I chose 16 because it's my favorite number
+
+idx_train <- createDataPartition(df$R1, p = 0.60, list = FALSE)
+train_df <- df[idx_train, , drop = FALSE]
+temp_df  <- df[-idx_train, , drop = FALSE]
+
+idx_valid <- createDataPartition(temp_df$R1, p = 0.50, list = FALSE)
+valid_df <- temp_df[idx_valid, , drop = FALSE]
+test_df  <- temp_df[-idx_valid, , drop = FALSE]
+
+dim(train_df); dim(valid_df); dim(test_df)
+```
+Because the total number of rows split into 60% (392.4 rows rounded up to 393 rows) left 261 rows to be split evenly, we ended up with 393 training, 131 validation, and 130 test.  
+As we learned in the lecture, the training set is used to fit the model, the validation set is used to tune `k`, and the test set is held out entirely until the very end.  
+The test set is only used once, so it gives a clean estimate of final model performance.  
+```{r rescale}
+num_cols2 <- names(train_df)[sapply(train_df, is.numeric)]
+num_cols2 <- setdiff(num_cols2, "R1")
+
+sc <- preProcess(train_df[, num_cols2, drop = FALSE],
+                 method = c("center", "scale"))
+
+train_df[, num_cols2] <- predict(sc, train_df[, num_cols2])
+valid_df[, num_cols2] <- predict(sc, valid_df[, num_cols2])
+test_df[,  num_cols2] <- predict(sc, test_df[,  num_cols2])
+```
+Here, `num_cols2` is created to store the names of all numeric predictor columns in the training data.  
+`setdiff(num_cols2, "R1")` should look familiar by now, I use this to remove the response variable so that only predictors are scaled as responses should never be scaled.
+`preProcess()` is then used to compute the mean and standard deviation, making sure to only use the training and validation sets.  
+The `predict()` portion applies this same transformation to the training, validation, and test sets.
+```{r knn-valid, message=FALSE, warning=FALSE}
+k_grid2 <- 1:21
+
+val_acc <- sapply(k_grid2, function(k) {
+
+  fit <- kknn(
+    form,
+    train = train_df,
+    test  = valid_df,
+    k = k,
+    distance = 2,
+    scale = FALSE
+  )
+
+  pred <- fitted(fit)
+  mean(pred == valid_df$R1)
+})
+
+best_k_val <- k_grid2[which.max(val_acc)]
+best_k_val
+max(val_acc)
+```
+`k_grid2` defines the range of values of `k` to evaluate, and so for each value of `k`, a knn model is trained on the training set and then evaluated on the validation set.  
+`mean(pred == valid_df$R1)` computes the validation accuracy for that specific value of `k`.  
+The value of `k` that maximizes validation accuracy is selected as `best_k_val`, which turned out to be `k = 20`, achieving [0.8854962] (88.5%) classification accuracy!  
+But, it's important to remember this is just the validation set, so we can only really use this to select the correct model.
+Finally, I run:
+```{r knn-test, include=FALSE}
+trainval_df <- rbind(train_df, valid_df)
+
+fit_test <- kknn(
+  form,
+  train = trainval_df,
+  test  = test_df,
+  k = best_k_val, # <-- this is 20
+  distance = 2,
+  scale = FALSE
+)
+
+pred_test <- fitted(fit_test)
+cm <- caret::confusionMatrix(pred_test, test_df$R1) # unless you want to see a bunch of data you don't really need...
+cm$overall["Accuracy"] # only pull...
+cm$table # what you need!
+```
+After the final tuning is complete, the training and validation sets are combined using `rbind()`, and then the final knn model is then fit using the selected value of `k = 20`.  
+`mean(pred_test == test_df$R1)` computes the final test accuracy, and `confusionMatrix()` provides a more detailed breakdown of classification performance (much more detailed than needed, very wordy, like me).  
+I found that `k = 20` achieved a [0.8153846] (81.5%) classification accuracy! Honestly, I'm not sure that this is a good accuracy point, I feel like with the specific data we are working with.. It's not the best, and should be slightly more accurate.  
+According to the small table provided by `confusionMatrix()`, Predicted vs Reference told me that [60] true [0] were reported as [0], and [11] true [0] were reported as [1] (false positives), and [46] true [1] were reported as [1], and [13] true [1] were reported as [0] (false negatives).  
+```{r fullpred, message=FALSE, warning=FALSE}
+fp_test <- cm$table["1", "0"]
+n_test  <- sum(cm$table)
+n_total <- nrow(df)
+
+fp_test / n_test * n_total
+```
+In a perfect world, that would mean there would be roughly [55] false positives (approving someone risky) in this model, which is actually ever so slightly better than what we saw on HW1... But still not something I would want to show off, if that makes sense?  
+However, once again similar to HW1, the scope of this homework does not ask me to optimize for business risk, so, I will move on.
+
+## Just For Fun
+In this section I wanted to do the optional portions of question 3.1!
+```{r svm-prep}
+X <- model.matrix(R1 ~ . - 1, data = df)
+y <- df$R1
+
+dim(X)
+```
+The `ksvm()` function requires the predictors to be provided as a numeric matrix  
+In case you see that the dimenstions are no longer [654] and [11], don't be alarmed.  
+The increase in the number of columns occurs because model.matrix() expands factor predictors into multiple dummy variables, producing a fully numeric design matrix required by the SVM.
+```{r svm-linear-cv-run, include=FALSE}
+C_grid <- c(0.001, 0.01, 0.1, 1, 10, 100, 1000)
+
+svm_cv_acc <- sapply(C_grid, function(Cval) {
+
+  fold_acc <- sapply(1:K, function(f) {
+    tr_idx <- which(fold_id != f)
+    te_idx <- which(fold_id == f)
+
+    Xtr <- X[tr_idx, , drop = FALSE]
+    ytr <- y[tr_idx]
+    Xte <- X[te_idx, , drop = FALSE]
+    yte <- y[te_idx]
+
+    nzv <- apply(Xtr, 2, var) > 0
+    Xtr <- Xtr[, nzv, drop = FALSE]
+    Xte <- Xte[, nzv, drop = FALSE]
+
+    pp <- suppressWarnings(preProcess(Xtr, method = c("center","scale")))
+    Xtr_s <- predict(pp, Xtr)
+    Xte_s <- predict(pp, Xte)
+
+    model <- suppressWarnings(
+      suppressMessages(
+        ksvm(
+          x = Xtr_s,
+          y = ytr,
+          type = "C-svc",
+          kernel = "vanilladot",
+          C = Cval,
+          scaled = FALSE
+        )
+      )
+    )
+
+    pred <- predict(model, Xte_s)
+    mean(pred == yte)
+  })
+
+  mean(fold_acc)
+})
+
+best_C_linear <- C_grid[which.max(svm_cv_acc)]
+best_acc_linear <- max(svm_cv_acc)
+```
+```{r svm-linear-cv-results}
+best_C_linear
+best_acc_linear
+```
+Here I use the same 10-fold cross-validation structure as before, but now to tune the SVM cost parameter C.  
+For each value of C, the model is trained on nine folds and evaluated on the remaining fold, and the average accuracy across folds is computed.  
+Overall, I found that the linear SVM performs comparably to knn on this dataset, and in this case achieves slightly higher cross-validated accuracy. 
+Among all values of C I tested, [C = 0.01] produced the highest average cross-validated accuracy, that accuracy being [0.8606527] (86%).
+This section is mainly exploratory, but it was helpful for seeing how different classifiers behave on the same problem!
