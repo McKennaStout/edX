@@ -115,7 +115,8 @@ plot(A$year, A$tmax, xlab = "Jul to Oct mean high", ylab = "Temperature")
 
 plot(Z$date, S, type = "l", xlab = "Date", ylab = "CUSUM")
 abline(v = Z$date[k2014], lty = 2)
-
+```
+```{r temps1tblchk, message=FALSE, warning=FALSE}
 dim(w)
 dim(L)
 dim(R)
