@@ -12,7 +12,7 @@ I also want to thank R’s built in help() function, which has been extremely us
 
 ## Question 5.1 Answer
 
-```{r setup, echo=FALSE}
+```{r setup}
 rm(list = ls())
 library(outliers)
 set.seed(16) #not needed but I added this to continue practicing adding a seed to my code blocks
@@ -30,20 +30,20 @@ g <- grubbs.test(na.omit(crime_data$Crime))
 #so I had to use this after already knowing the higher value was the possible outlier
 g
 ```
+This was a pretty simple setup, I loaded the uscrime dataset and ran Grubbs test on the [Crime] column (after removing any missing values).
 Even though they tell us exactly which test to run, I still wanted to know "why this test?"  
 So, from my understanding, this specific kind of test is just to see if there is one unusually large or small value compared to the rest of the data, which is perfect for the question we are being asked.  
 
-Analysis:  
+**ANALYSIS:**  
 [1993] is was the most extreme value in the data, and is extreme in the sense this is the largest value.  
 I got [G = 2.81287], which is the Grubbs test statistic, this shows us that the largest value is [~2.81] standard deviations (distance) away from the mean.  
 I also got [U = 0.82426], I didn't know what this meant, so I used 'help(grubbs.test)' which essentially told me:
 1. Smaller U corresponds to a more extreme observation  
-2. It can be ignored safely for this assignment  
-FInally, I got [p-value = 0.07887] (7.87%), This result says: If all the crime rates follow the same general pattern and there is no true outlier, results this extreme would show up about 8 times out of 100 just by chance.  
-So, in my personal opinion of this, there is no outlier in this dataset.  
-8 out of 100 is not insanely rare, rare enough to notice, but not rare enough I could confidently say "this can't occur "naturally."  
-This sentiment I believe is backed by the fact Grubbs is really good for catching the extremes, which could be the outlier, but not so good at catching multiple large values at once.  
-The next closest value is [1969], which is pretty close. So statistically, the upper tail has more than one large value, which also weakens the case that [1993] is a lone, aberrant point.  
+2. It can be ignored for this assignment  
+FInally, I got [p-value = 0.07887] (7.87%), This result says: If all the crime rates follow the same general pattern, results this like this would show up about 8 times out of 100 just by chance.  
+Before deciding my thoughts, I wanted to also make sure to say that Grubbs is really good for catching the extremes, which could be the outlier, but not so good at catching multiple large values at once. For example, the next closest value is [1969], which is pretty close! But Grubbs doesn't know that, and treats [1993] like it's all alone out there.    
+So, because we know the upper tail contains more than one large value, the case that [1993] is a lone, truly aberrant point is much weaker.  
+Therefore, in my personal and professional opinion, there is no outlier in this dataset. 8 out of 100 is not insanely rare, rare enough to notice, but not rare enough I could confidently say "this can't occur "naturally."  
 
 ## Question 6.1 Answer
 
@@ -56,13 +56,14 @@ This lets the model catch real changes while ignoring normal short term variatio
 
 ## Question 6.2 Answer
 
-```{r tempssetup, echo=FALSE}
+### Part 1
+
+```{r temps1cusum, message=FALSE, warning=FALSE, fig.width=7, fig.height=7, results='hide'}
 path <- "C:/Users/mstout/OneDrive - AANP/Documents/Workspace.MAIN/edX/GTx.ISYE6501/data/Homework3_ISYE_6501/data 6.2/temps.txt"
 w <- read.delim(path, sep = "\t", header = TRUE, check.names = FALSE)
 
 print(dim(w))
-```
-```{r temps1table, echo=FALSE, message=FALSE, warning=FALSE}
+
 years <- names(w)[names(w) != "DAY"]
 d <- as.Date(paste0("2000-", w$DAY), format = "%Y-%d-%b")
 mmdd <- format(d, "%m-%d")
@@ -75,8 +76,7 @@ L <- do.call(rbind, lapply(years, function(y) {
   )
 }))
 L <- L[order(L$year, L$date), ]
-```
-```{r temps2cusum, echo=FALSE, message=FALSE, warning=FALSE}
+
 one_year <- function(z) {
   z <- z[order(z$date), ]
   x <- z$tmax
@@ -90,27 +90,19 @@ one_year <- function(z) {
     mean_after = mean(x[(k + 1):length(x)], na.rm = TRUE)
   )
 }
-```
-```{r temps3cusumyr, echo=FALSE, message=FALSE, warning=FALSE}
+
 R <- do.call(rbind, lapply(split(L, L$year), one_year))
 R$drop_after <- R$mean_after - R$mean_before
 R <- R[order(R$year), ]
-```
-```{r temps4means, echo=FALSE, message=FALSE, warning=FALSE}
+
 A <- aggregate(tmax ~ year, L, mean)
 A <- A[order(A$year), ]
-```
-```{r temps52014, echo=FALSE, message=FALSE, warning=FALSE}
+
 Z <- split(L, L$year)[["2014"]]
 Z <- Z[order(Z$date), ]
 S <- cumsum(Z$tmax - mean(Z$tmax, na.rm = TRUE))
 k2014 <- which.max(S)
-```
-```{r temps6summaries, echo=TRUE, message=FALSE, warning=FALSE}
-summary(lm(mean_before ~ year, data = R))
-summary(lm(end_doy ~ year, data = R))
-```
-```{r temps7plots, echo=FALSE, message=FALSE, warning=FALSE, fig.width=7, fig.height=7}
+
 par(mfrow = c(2, 2))
 
 plot(R$year, R$end_doy, xlab = "Year", ylab = "End of summer day of year")
@@ -123,19 +115,31 @@ plot(A$year, A$tmax, xlab = "Jul to Oct mean high", ylab = "Temperature")
 
 plot(Z$date, S, type = "l", xlab = "Date", ylab = "CUSUM")
 abline(v = Z$date[k2014], lty = 2)
-```
-```{r temps8sanity, echo=TRUE, message=FALSE, warning=FALSE}
+
 dim(w)
 dim(L)
 dim(R)
 head(R,20) #just want to ensure it all loaded as expected
 ```
-Using CUSUM, I centered each year’s daily high temperatures around that year’s July to October average and defined the CUSUM maximum as the end of summer.  
-With this method, I found that summer in Atlanta typically ends in early to mid September, most often between about [September 5] and [September 20].  
-Before the CUSUM peak, average daily highs were usually in the upper [80s] to low [90s], and after the peak they dropped to the mid [70s], a decrease of about [10 to 15] degrees.  
+This was the main setup for Part 1!  
+I loaded the temps dataset, reshaped it into a long table with one row per [date] per [year] using `lapply()` and `do.call(),` and then processed each year separately using `split().`  
+Within each year, I centered daily high temperatures by subtracting the yearly July to October mean and used `cumsum()` to compute the CUSUM values. I defined the end of summer as the date where the CUSUM reached its maximum, using `which.max().`  
+I also included a single year (2014) example plot to make it easier to see how the CUSUM curve increases during consistently warm days and peaks when temperatures begin to drop.  
 
-Analysis:  
-To check whether summers have been lasting longer over time, I looked at the trend in the calendar day of year for the CUSUM end of summer date across years.  
+### Part 2
+
+```{r tempspart2trends, message=FALSE, warning=FALSE}
+summary(lm(mean_before ~ year, data = R))
+summary(lm(end_doy ~ year, data = R))
+```
+This was the setup for Part 2!  
+After I identified one end of summer date per year, I fit two simple linear regression models using `lm().`  
+The first regression looked at whether average daily high temperatures before the CUSUM peak changed over time, which I used to check if summers became warmer.  
+The second regression looked at whether the calendar day of year for the CUSUM end of summer date changed over time, which I used to check if summers have been lasting longer.  
+
+**ANALYSIS:**  
+Using the CUSUM results from Part 1, I found that summer in Atlanta typically ends in early to mid September, most often between about [September 5] and [September 20].  
+Before the CUSUM peak, average daily highs were usually in the upper [80s] to low [90s], and after the peak they dropped to the mid [70s], a decrease of about [10 to 15] degrees.  
 The estimated temperature trend was about [0.05] degrees per year with a p value of about [0.58], and the trend in the end of summer date was about [-0.14] days per year with a p value of about [0.66].  
-Both p values are fairly large, which means these trends are not statistically significant and could easily be due to random variation rather than a real change over time.  
-Based on these results from [1996] to [2015], there is no strong statistical evidence that Atlanta’s summers became warmer or lasted longer over this period.  
+Both p values are fairly large, meaning these trends are not statistically significant and could easily be due to random variation rather than a real change over time.  
+Based on these results from [1996] to [2015], I believe there is no strong statistical evidence that Atlanta’s summers became warmer or lasted longer over this period (based on this data alone).
