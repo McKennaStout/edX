@@ -123,6 +123,7 @@ dim(R)
 head(R,20) #just want to ensure it all loaded as expected
 ```
 This was the main setup for Part 1!  
+I used https://r-graphics.org/ and AI to help me shape this part, as I am not as experienced with graphs or plotting within R yet. As I said before, I did not copy any specific lines of code, I just used it as a helpful reference for me to better understand how best to write it.  
 I loaded the temps dataset, reshaped it into a long table with one row per [date] per [year] using `lapply()` and `do.call(),` and then processed each year separately using `split().`  
 Within each year, I centered daily high temperatures by subtracting the yearly July to October mean and used `cumsum()` to compute the CUSUM values. I defined the end of summer as the date where the CUSUM reached its maximum, using `which.max().`  
 I also included a single year (2014) example plot to make it easier to see how the CUSUM curve increases during consistently warm days and peaks when temperatures begin to drop.  
