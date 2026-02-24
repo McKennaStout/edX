@@ -1,0 +1,88 @@
+---
+title: "Homework 6 (ISYE 6501) — Questions 9.1"
+output:
+  pdf_document:
+    latex_engine: xelatex
+---
+Sorry in advance to my peer reviewers! (ᵕ—ᴗ—) I like to write out my reasoning and can be... wordy... But I will try to be even more brief this time after taking the advice from HW5 peers!  
+<!-- ## rmarkdown::render("edX/GTx.ISYE6501/homework/homework6_answers.Rmd") -->  
+
+## Question 9.1 Answer
+I used https://www.overleaf.com/learn and AI to help me shape the code for this question, as I am not as experienced with writing R yet.  
+I did not copy any specific lines of code, I just used it as a helpful reference for me to better understand how best to write it.   
+```{r hw6, message=FALSE, warning=FALSE}
+rm(list = ls())
+set.seed(16)
+
+crime <- read.table("C:/Users/mstout/OneDrive - AANP/Documents/Workspace.MAIN/edX/GTx.ISYE6501/data/Homework6_ISYE6501/uscrime.txt",
+                    header = TRUE)
+
+X <- crime[, names(crime) != "Crime"]
+y <- crime$Crime
+
+pca_model <- prcomp(X, scale. = TRUE)
+summary(pca_model)
+
+k <- 5
+
+pc_data <- data.frame(Crime = y, pca_model$x[, 1:k])
+pcr_model <- lm(Crime ~ ., data = pc_data)
+summary(pcr_model)
+
+beta_pc <- coef(pcr_model)[-1]
+intercept_pc <- coef(pcr_model)[1]
+
+loadings <- pca_model$rotation[, 1:k]
+scales <- pca_model$scale
+centers <- pca_model$center
+
+beta_pc <- as.matrix(beta_pc) # k*1
+loadings <- as.matrix(loadings) # p*k
+
+beta_original_scaled <- loadings %*% beta_pc #p*1
+beta_original_scaled <- as.vector(beta_original_scaled)
+
+beta_unscaled <- beta_original_scaled / scales
+
+intercept_unscaled <- as.numeric(intercept_pc) - sum((centers / scales) * beta_original_scaled)
+
+beta_unscaled
+intercept_unscaled
+
+new_city <- data.frame(
+  M = 14.0,
+  So = 0,
+  Ed = 10.0,
+  Po1 = 12.0,
+  Po2 = 15.5,
+  LF = 0.640,
+  M.F = 94.0,
+  Pop = 150,
+  NW = 1.1,
+  U1 = 0.120,
+  U2 = 3.6,
+  Wealth = 3200,
+  Ineq = 20.1,
+  Prob = 0.04,
+  Time = 39.0
+)
+
+new_city <- new_city[, names(beta_unscaled)]
+
+pred_pcr <- intercept_unscaled + as.numeric(as.matrix(new_city) %*% beta_unscaled)
+pred_pcr
+```
+
+**METHODOLOGY:**  
+I began by loading the same crime dataset used in Question 8.2 and separating the predictors from the response variable.  
+Since we learned that PCA is sensitive to scale, I used `prcomp` with `scale. = TRUE`, which centers and standardizes all predictors before computing principal components.  
+I then examined the proportion of variance explained by each component using `summary(pca_model)` and selected the first k principal components (here, k = 5) to use in the regression model. (This was to retain most of the variance in the preictors while reducing dimensionality and minimizing multicollinearity)  
+I then fit a regression model using the first k principal components as predictors, and because the assignment requires expressing the model in terms of the original variables, I converted the principal component regression coefficients back to the original scale.  
+This involved multiplying the PC coefficients by the loading matrix, reversing the scaling transformation, and then adjusting the intercept accordingly.  
+Finally, I generated a prediction for the specified city using the unscaled coefficients. The predicted crime rate for the city is **1388.926**.  
+
+**ANALYSIS:**  
+Using the first five principal components produced a regression model with R-squared = **0.6452**, Adjusted R-squared = **0.6019**, and residual standard error = **244**.  
+Compared to my full model in Question 8.2 (R-squared = 0.8031, Adjusted R-squared = 0.7078, RSE = 209.1), this model explains less variance but uses a lower dimensional representation of the predictors.  
+The predicted crime rate for the specified city is again **1388.926**. Unlike the full 15-variable model from Question 8.2, this prediction falls within a realistic range of observed crime values in the dataset.  
+Overall, the PCA regression sacrifices some fit in exchange for reduced dimensionality and improved stability. Because PCA removes redundancy among correlated predictors, this model is less sensitive to multicollinearity and provides a more controlled structure for prediction.

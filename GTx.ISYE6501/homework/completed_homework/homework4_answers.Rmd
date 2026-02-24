@@ -1,0 +1,190 @@
+---
+title: "Homework 4 (ISYE 6501) — Questions 7.1 & 7.2"
+output:
+  pdf_document:
+    latex_engine: xelatex
+---
+Sorry in advance to my peer reviewers! (ᵕ—ᴗ—) I like to write out my reasoning and can be... wordy... But I will try to be even more brief this time after taking the advice from HW3 peers!  
+<!-- ## rmarkdown::render("edX/GTx.ISYE6501/homework/homework4_answers.Rmd") -->  
+
+## Question 7.1 Answer
+
+I believe exponential smoothing would be best for modeling my heart rate trends over time, particularly my daily resting heart rate and my typical active (workout) heart rate.  
+While my heart rate during intense exercise can reach values as high as 167 bpm, my resting heart rate is much lower, around 73 bpm, and both measures are expected to change gradually as my cardiovascular fitness improves (hopefully!).  
+My personal goal is for both my resting heart rate and my active workout heart rate to decrease over time, indicating improved efficiency and more endurance.  
+
+The data required would be time ordered daily measurements of resting heart rate and, separately, a representative active heart rate (such as average or peak heart rate during one of my standard runs).  
+These measurements can exhibit short term variability due to factors like fatigue, stress, hydration, or sleep, even when the long term trend is improving.  
+
+I would expect the smoothing parameter alpha to be closer to 0 than to 1, because meaningful changes in cardiovascular fitness occur slowly rather than abruptly.  
+A smaller alpha value would reduce the influence of daily randomness and emphasize the long term downward trend in heart rate, making exponential smoothing better suited for tracking gradual fitness improvements rather than overreacting to very temporary fluctuations.  
+
+## Question 7.2 Answer
+I used https://r-graphics.org/ and AI to help me shape the code for this question, as I am not as experienced with graphs or plotting within R yet.  
+I did not copy any specific lines of code, I just used it as a helpful reference for me to better understand how best to write it.  
+```{r temps, message=FALSE, warning=FALSE}
+rm(list = ls())
+set.seed(16)
+
+temps <- read.delim(
+  "C:/Users/mstout/OneDrive - AANP/Documents/Workspace.MAIN/edX/GTx.ISYE6501/data/Homework4_ISYE6501/temps.txt",
+  header = TRUE,
+  sep = "\t",
+  check.names = FALSE,
+  stringsAsFactors = FALSE
+)
+
+print(dim(temps))      # I expect to see 123 rows x 21 columns
+print(head(temps, 3))  # sanity check
+print(tail(temps, 3))
+str(temps)
+
+stopifnot(
+  ncol(temps) == 21,    # DAY + 20 years
+  !anyNA(temps$DAY)
+)
+
+day_label <- temps$DAY
+years <- as.integer(names(temps)[-1])
+n_days <- nrow(temps)
+
+day_date <- as.Date(paste0(day_label, "-2000"), format = "%d-%b-%Y")
+day_idx  <- seq_len(n_days)
+
+
+holt_smooth <- function(x) {
+  fit <- HoltWinters(x, gamma = FALSE)  # level + trend, no seasonality
+  s <- rep(NA_real_, length(x))
+  s[1] <- x[1]
+  s[2:length(x)] <- fit$fitted[, "xhat"]
+  s
+}
+
+baseline_window <- 1:62
+start_search <- 46
+k_drop <- 5
+hold_days <- 7
+
+end_idx <- rep(NA_integer_, length(years))
+names(end_idx) <- years
+
+for (yr in years) {
+  x <- temps[[as.character(yr)]]
+  s <- holt_smooth(x)
+
+  baseline <- mean(x[baseline_window], na.rm = TRUE)
+  thresh <- baseline - k_drop
+
+  found <- NA_integer_
+  max_i <- n_days - hold_days + 1
+
+  for (i in start_search:max_i) {
+    if (all(s[i:(i + hold_days - 1)] < thresh, na.rm = TRUE)) {
+      found <- i
+      break
+    }
+  }
+
+  end_idx[as.character(yr)] <- found
+}
+
+end_date <- ifelse(is.na(end_idx), NA, format(day_date[end_idx], "%b %d"))
+
+results <- data.frame(
+  year = years,
+  end_day_index = as.integer(end_idx),
+  end_date = end_date
+)
+
+print(results)
+
+fit_trend <- lm(end_day_index ~ year, data = results)
+print(summary(fit_trend))
+
+slope_days_per_year <- coef(fit_trend)[["year"]]
+p_value <- summary(fit_trend)$coefficients["year", "Pr(>|t|)"]
+
+cat("\nEstimated shift (days per year):", slope_days_per_year, "\n")
+cat("p-value for linear trend:", p_value, "\n")
+
+plot(
+  results$year,
+  results$end_day_index,
+  xlab = "Year",
+  ylab = "Estimated end-of-summer day index (Jul 1 = 1)",
+  main = "End of summer over time (Holt smoothing)"
+)
+abline(fit_trend)
+
+example_year <- years[1]  # fixed choice, no randomness
+x_ex <- temps[[as.character(example_year)]]
+s_ex <- holt_smooth(x_ex)
+
+plot(
+  day_idx,
+  x_ex,
+  type = "l",
+  xlab = "Day index (Jul 1 = 1)",
+  ylab = "Daily high (F)",
+  main = paste("Raw vs smoothed daily highs —", example_year)
+)
+lines(day_idx, s_ex, lwd = 2)
+if (!is.na(end_idx[as.character(example_year)])) {
+  abline(v = end_idx[as.character(example_year)], lty = 2)
+}
+
+k_drop_alt <- 4
+hold_days_alt <- 5
+
+end_idx_alt <- rep(NA_integer_, length(years))
+names(end_idx_alt) <- years
+
+for (yr in years) {
+  x <- temps[[as.character(yr)]]
+  s <- holt_smooth(x)
+
+  baseline <- mean(x[baseline_window], na.rm = TRUE)
+  thresh <- baseline - k_drop_alt
+
+  found <- NA_integer_
+  max_i <- n_days - hold_days_alt + 1
+
+  for (i in start_search:max_i) {
+    if (all(s[i:(i + hold_days_alt - 1)] < thresh, na.rm = TRUE)) {
+      found <- i
+      break
+    }
+  }
+
+  end_idx_alt[as.character(yr)] <- found
+}
+
+results_alt <- data.frame(
+  year = years,
+  end_day_index_alt = as.integer(end_idx_alt)
+)
+
+comparison <- merge(results, results_alt, by = "year")
+print(comparison)
+```
+**METHODOLOGY:**  
+I alwats start by clearing the workspace using 'rm(list = ls())' and setting a seed with 'set.seed(16)' so the analysis was clean and consistent across runs (not really needed, this is just a habit of mine).  
+The temperature data were loaded from a tab delimited text file using 'read.delim', I then verified that the data loaded correctly using basic checks (dim, head, tail, and str) and enforced the expected structure with a 'stopifnot' statement to confirm the presence of one [DAY] column and twenty [year] columns.  
+
+The [DAY] column was separated out, and the [year] columns were converted to integers to create a vector of years for iteration. Because the day labels do not include a year, I assigned a "dummy year" so they could be treated as Date objects and ordered correctly.   
+
+I then applied exponential smoothing using [Holt’s linear method] via 'HoltWinters,' with seasonality disabled (gamma = FALSE), consistent with the approach discussed throughout [Module 7].  
+Since Holt Winters fitted values begin at the second observation, I aligned the smoothed series by setting the first smoothed value equal to the first observed temperature.
+
+To estimate the unofficial end of summer for each year, I defined a fixed rule. I calculated a summer baseline as the mean daily high temperature over July and August, and defined the end of summer as the first point where the smoothed temperature dropped at least [5 degrees] below this baseline for [7] consecutive days.  
+This rule was applied to each year’s smoothed temperature series, and the resulting day indices were converted into readable month day values.
+
+Finally, to assess whether the end of summer has shifted over time, I fit a linear regression model with the estimated end of summer day index as the response and year as the predictor, and visualized the results using a scatter plot with a fitted regression line.  
+As an additional analysis, I also evaluated how sensitive the estimated end of summer dates were to the chosen threshold, and found that modest changes to the rule shifted individual dates slightly but did not alter the overall trend or conclusions.
+
+**ANALYSIS:**  
+Based on everything I have put together, the end of summer in Atlanta generally occurs in early to mid September, with A LOT of year to year variation. The smoothed series identifies sustained seasonal cooling rather than short term temperature dips.
+
+The regression of the estimated end of summer index on year yields a slope of approximately [0.08] days per year with a p value of [0.85], which to me indicates there is nothing proving the end of summer has shifted to a later start over the 20 year period.
+
+For the extra robustness check, I repeated the analysis using a less restrictive definition of the end of summer ([4 degrees] for [5] days). While some individual dates shifted earlier, the overall pattern and lack of a meaningful time trend remained unchanged.

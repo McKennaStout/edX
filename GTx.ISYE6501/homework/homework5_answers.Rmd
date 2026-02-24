@@ -1,0 +1,118 @@
+---
+title: "Homework 5 (ISYE 6501) — Questions 8.1 & 8.2"
+output:
+  pdf_document:
+    latex_engine: xelatex
+---
+Sorry in advance to my peer reviewers! (ᵕ—ᴗ—) I like to write out my reasoning and can be... wordy... But I will try to be even more brief this time after taking the advice from HW4 peers!  
+<!-- ## rmarkdown::render("edX/GTx.ISYE6501/homework/homework5_answers.Rmd") -->  
+
+## Question 8.1 Answer
+
+I feel like I have been using this a lot, and it has made me realize I should do more than just run and work. I am thankful to this course for helping me realize this.  
+But, once more, I believe a linear regression model on my life would be appropriate for something like: **predicting how much I actually run in a week** while I'm training for a marathon *and* working a lot.  
+
+In this setup, my response variable would be:  
+
+- `[Y] = total weekly running mileage (mi)`
+
+Then I could use a few predictors that reflect the constant back and forth between training + work + recovery, like:  
+
+- `[X1] = total hours worked that week`
+- `[X2] = number of days I had to be in-office`
+- `[X3] = average sleep per night (hours)`
+- `[X4] = long run distance (mi)`
+- `[X5] = fatigue score (1–10)` (like, how wrecked I feel by the end of the day/week)
+
+This is the basic model form:  
+
+\[
+Mileage_i = \beta_0 + \beta_1 WorkHours_i + \beta_2 InOfficeDays_i + \beta_3 Sleep_i + \beta_4 LongRun_i + \beta_5 Fatigue_i + \epsilon_i
+\]
+
+How I'd interpret it:  
+
+- `Beta 1` tells me the expected change in weekly mileage for each extra hour of work, holding everything else constant (so: how much work squeezes training).  
+- `Beta 3` tells me how mileage changes with sleep (does more sleep = more capacity to train).  
+- `Beta 5` captures the marginal effect(s) of feeling fried (fatigue usually means I skip or reduce my runs).  
+
+This feels like a good linear regression use case because `[Y]` is continuous, the predictors are measurable, and the main point is both:  
+1) prediction (what mileage is realistic on brutal work weeks), and   
+2) interpretation (which factors are actually limiting me the most).  
+
+## Question 8.2 Answer
+I used https://www.overleaf.com/learn/latex/Mathematical_expressions/ and AI to help me shape the code for this question, as I am not as experienced with writing out mathematical expressions within R yet.  
+I did not copy any specific lines of code, I just used it as a helpful reference for me to better understand how best to write it.   
+
+```{r hw5, message=FALSE, warning=FALSE}
+rm(list = ls())
+set.seed(16)
+
+crime <- read.table("C:/Users/mstout/OneDrive - AANP/Documents/Workspace.MAIN/edX/GTx.ISYE6501/data/Homework5_ISYE6501/uscrime.txt",
+                    header = TRUE)
+
+dim(crime)
+head(crime)
+tail(crime)
+str(crime)
+
+full_model <- lm(Crime ~ ., data = crime)
+summary(full_model)
+
+new_city <- data.frame(
+  M = 14.0,
+  So = 0,
+  Ed = 10.0,
+  Po1 = 12.0,
+  Po2 = 15.5,
+  LF = 0.640,
+  M.F = 94.0,
+  Pop = 150,
+  NW = 1.1,
+  U1 = 0.120,
+  U2 = 3.6,
+  Wealth = 3200,
+  Ineq = 20.1,
+  Prob = 0.04,
+  Time = 39.0
+)
+
+predicted_crime <- predict(full_model, newdata = new_city)
+confidence_interval <- predict(full_model, newdata = new_city, interval = "confidence")
+prediction_interval <- predict(full_model, newdata = new_city, interval = "prediction")
+
+predicted_crime
+confidence_interval
+prediction_interval
+```
+
+**METHODOLOGY:**  
+I started by clearing the workspace using `rm(list = ls())` and setting a seed with `set.seed(16)` so the analysis was clean and reproducible (not strictly necessary here, but I always do it)!  
+The crime dataset was loaded from a local tab‑delim text file using `read.table`. I always like to verify that the data loaded correctly using `dim`, `head`, `tail`, and `str` to confirm there were 47 observations and 16 total columns (15 predictors plus the response variable `Crime`).  
+I then fit a full multiple linear regression model using `lm(Crime ~ ., data = crime)`, which includes all 15 predictors:  
+
+\[
+Crime = \beta_0 + \beta_1 M + \beta_2 So + \beta_3 Ed + \beta_4 Po1 + \beta_5 Po2 + \beta_6 LF + \beta_7 M.F 
++ \beta_8 Pop + \beta_9 NW + \beta_{10} U1 + \beta_{11} U2 + \beta_{12} Wealth + \beta_{13} Ineq + \beta_{14} Prob + \beta_{15} Time
+\]  
+
+The `summary(full_model)` output provides the coefficient estimates, standard errors, t‑stats, p‑values, and overall model fit statistics (R‑squared, Adjusted R‑squared, residual standard error, and F‑stat).  
+To generate a prediction for the specified city, I created a new data frame with the provided predictor values and used the `predict` function to compute the point estimate, as well as confidence and prediction intervals.  
+
+**ANALYSIS:**  
+The fitted model uses all 15 predictors to explain variation in crime rates across the 47 cities.  
+The Multiple R-squared is **0.8031**, meaning about 80% of the variation in crime is explained in sample. However, the Adjusted R-squared drops to **0.7078**, which reflects the penalty for including a relatively large number of predictors given the small sample size.  
+The overall model I would say is statistically significant (F-stat = **8.429**, p-value = **3.539e-07**), indicating that at least one predictor is meaningfully associated with crime.  
+The residual standard error is **209.1**, which suggests that even in sample, the typical prediction error is around 200 crime units.  
+
+That said, because there are only 47 observations and 15 predictors, the model is likely overfit. This means:  
+- Coefficient estimates may be unstable  
+- Some predictors may appear significant due to noise  
+- The in sample R-squared may overstate true predictive performance  
+
+For the specified city, the predicted crime rate is **155.43**. However, the uncertainty around this estimate is substantial. The 95% confidence interval ranges from **-1310.08 to 1620.95**, and the 95% prediction interval ranges from **-1370.85 to 1681.72**.  
+These intervals are extremely wide and even include negative values, which are not practically meaningful for crime rates.  
+
+This reinforces the overfitting concern:  
+Although the model fits the observed data reasonably well in sample, the high predictor to sampl ratio leads to large uncertainty in predictions.  
+Overall, while the full model produces a numerical estimate, the width of the intervals suggests caution when interpreting individual coefficients or relying heavily on this model for out of sample prediction.
