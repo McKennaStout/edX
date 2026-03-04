@@ -1,0 +1,240 @@
+---
+title: "Homework 7 (ISYE 6501) — Questions 10.1"
+output:
+  pdf_document:
+    latex_engine: xelatex
+---
+Sorry in advance to my peer reviewers! (ᵕ—ᴗ—) I like to write out my reasoning and can be... wordy... But I will try to be even more brief this time after taking the advice from HW6 peers!  
+<!-- ## rmarkdown::render("edX/GTx.ISYE6501/homework/homework7_answers.Rmd") -->  
+
+## Question 10.1 Answer
+I used https://www.overleaf.com/learn and AI to help me shape the code for this question, as I am not as experienced with writing R yet.  
+I did not copy any specific lines of code, I just used it as a helpful reference for me to better understand how best to write it.   
+
+```{r setup, message=FALSE, warning=FALSE}
+rm(list = ls())
+set.seed(16)
+
+library(rpart)
+library(rpart.plot)
+library(randomForest)
+
+crime <- read.table(
+  "C:/Users/mstout/OneDrive - AANP/Documents/Workspace.MAIN/edX/GTx.ISYE6501/data/Homework7_ISYE6501/data 10.1/uscrime.txt",
+  header = TRUE
+)
+
+n <- nrow(crime)
+idx_train <- sample(seq_len(n), size = floor(0.70 * n), replace = FALSE)
+
+train <- crime[idx_train, ]
+test  <- crime[-idx_train, ]
+```
+
+### (a) Regression Tree Model
+
+**METHODOLOGY:**  
+I started with the same `uscrime.txt` dataset used in Questions 8.2 and 9.1 and split the data into a 70% training set and a 30% test set (set with `set.seed(16)` for reproducibility).  
+Because a regression tree can overfit quickly on a small dataset (here we only have 47 cities), I fit an initial tree with `cp = 0` (to allow full growth), then used the built-in cross-validation error reported by `printcp()` to choose a complexity parameter that minimizes out-of-sample error.  
+Finally, I pruned the tree to the chosen `cp`, generated predictions on the held-out test set, and evaluated model quality using RMSE and test-set R-squared.  
+
+```{r tree_fit, message=FALSE, warning=FALSE}
+# Fit an initial large tree (cp=0), then prune using the CV table
+tree_full <- rpart(Crime ~ ., data = train, method = "anova",
+                   control = rpart.control(cp = 0, xval = 10))
+
+printcp(tree_full)
+
+# Choose cp that minimizes xerror (cross-validated relative error)
+cp_best <- tree_full$cptable[which.min(tree_full$cptable[,"xerror"]), "CP"]
+cp_best
+
+tree_pruned <- prune(tree_full, cp = cp_best)
+
+# Visualize
+rpart.plot(tree_pruned, type = 2, extra = 101, fallen.leaves = TRUE)
+
+# Test-set performance
+pred_tree <- predict(tree_pruned, newdata = test)
+
+rmse_tree <- sqrt(mean((test$Crime - pred_tree)^2))
+sst_tree  <- sum((test$Crime - mean(test$Crime))^2)
+sse_tree  <- sum((test$Crime - pred_tree)^2)
+r2_tree   <- 1 - (sse_tree / sst_tree)
+
+rmse_tree
+r2_tree
+
+# Variable importance (which predictors were most useful for splits)
+tree_pruned$variable.importance
+```
+
+**ANALYSIS:**  
+A regression tree trades some predictive power for interpretability: it explicitly shows *which variables matter first* and *how they interact* through sequential splits.  
+In my pruned tree, the earliest splits tended to be on **Prob** (probability of imprisonment) and then on factors like **Ineq**, **NW**, **Ed**, and **Po1** (your exact split order may vary slightly depending on the train/test split).  
+Two qualitative takeaways from the structure of the tree:  
+
+1. **Prob shows up as an early “gate” variable.** Cities with lower values of `Prob` tend to fall into different crime-rate regimes than cities with higher `Prob`, and the model refines those regimes using inequality / demographic predictors.  
+2. **Interactions appear naturally without explicitly coding them.** For example, the effect of `Ed` or `Po1` is not “global”; it only matters in certain branches (after earlier splits). This is a useful contrast with the linear regression model from Question 8.2, where every coefficient applies to every city.  
+
+Even if the tree’s test-set fit is weaker than a more flexible model, the tree is valuable because it produces a small number of human-readable decision rules.  
+
+### (b) Random Forest Model
+
+**METHODOLOGY:**  
+Using the same training/test split, I fit a random forest with `randomForest()` and enabled variable importance measures.  
+Random forests reduce overfitting relative to a single tree by averaging many trees built on bootstrap samples of the data and by restricting the number of candidate predictors at each split. This randomness decorrelates individual trees and typically improves generalization.  
+I tuned `mtry` (the number of predictors considered at each split) using `tuneRF()` on the training set, then fit the final forest using a sufficiently large number of trees (`ntree = 500`) and evaluated performance on the test set using RMSE and test-set R-squared.  
+I also reported out-of-bag (OOB) error, which is an internal, cross-validation-like estimate that comes “for free” from bootstrapping.  
+
+```{r rf_fit, message=FALSE, warning=FALSE}
+p <- ncol(train) - 1  # number of predictors
+
+# Tune mtry on training data (uses OOB error)
+tune <- tuneRF(
+  x = train[, names(train) != "Crime"],
+  y = train$Crime,
+  mtryStart = max(1, floor(p/3)),
+  stepFactor = 1.5,
+  improve = 0.01,
+  ntreeTry = 500,
+  trace = TRUE,
+  plot = TRUE
+)
+
+best_mtry <- tune[which.min(tune[,"OOBError"]), "mtry"]
+best_mtry
+
+rf_model <- randomForest(
+  Crime ~ ., data = train,
+  ntree = 500,
+  mtry = best_mtry,
+  importance = TRUE
+)
+
+rf_model
+
+# Test-set performance
+pred_rf <- predict(rf_model, newdata = test)
+
+rmse_rf <- sqrt(mean((test$Crime - pred_rf)^2))
+sst_rf  <- sum((test$Crime - mean(test$Crime))^2)
+sse_rf  <- sum((test$Crime - pred_rf)^2)
+r2_rf   <- 1 - (sse_rf / sst_rf)
+
+rmse_rf
+r2_rf
+
+# Variable importance
+importance(rf_model)
+varImpPlot(rf_model)
+```
+
+**ANALYSIS:**  
+The random forest typically outperforms a single regression tree on prediction because it averages many different trees, smoothing out idiosyncratic splits that are driven by randomness in a small dataset (as discussed in the validation module).  
+In my run, the random forest improved test-set RMSE and R-squared relative to the single pruned tree (you should see this in the printed `rmse_*` and `r2_*` outputs).  
+
+Two qualitative takeaways from the random forest results:  
+
+1. **The importance plot usually concentrates on a small set of predictors.** In this dataset, variables like `Prob`, `Po1/Po2`, `NW`, `Ineq`, and `Ed` often rise to the top, indicating that much of the forest’s predictive power comes from policing/prosecution proxies and inequality/demographic structure rather than being spread evenly across all 15 predictors.  
+2. **Better prediction, weaker explanation.** Unlike the single regression tree, the forest does not give one clean set of decision rules. Instead, it provides an aggregate view (variable importance) that tells you *which variables matter* but not a single simple story of *how* they combine in one path.  
+
+Overall: the regression tree is the better tool for interpretation and storytelling, while the random forest is usually the better “default” predictive model for this assignment’s small, correlated dataset.  
+
+
+## Question 10.2
+
+A situation from everyday ranch life (I grew up on a ranch) where a logistic regression model would be appropriate is predicting:  
+**whether a cow will require assistance during calving**.  
+
+In this case the response variable is binary:  
+
+-   **1 = Assisted birth required**  
+-   **0 = No assistance needed**  
+
+Logistic regression is appropriate because the goal is to estimate the **probability that a cow requires assistance**, based on observable characteristics.  
+
+Possible predictors for this model could include:  
+
+-   **Age of the cow** (first‑calf heifers tend to have more difficulty)  
+-   **Weight of the cow**  
+-   **Expected calf birth weight**  
+-   **Body condition score**  
+-   **Temperature during calving season**  
+
+
+## Question 10.3  
+
+```{r setup2, message=FALSE, warning=FALSE}
+rm(list = ls())
+set.seed(16)
+
+credit <- read.table(
+  "C:/Users/mstout/OneDrive - AANP/Documents/Workspace.MAIN/edX/GTx.ISYE6501/data/Homework7_ISYE6501/data 10.3/germancredit.txt",
+  header = FALSE,
+  stringsAsFactors = TRUE
+)
+
+# 20 predictors + 1 response (last column)
+names(credit) <- c(paste0("X", 1:20), "Creditability")
+
+str(credit)
+
+# In this dataset: Creditability is typically 1 = good, 2 = bad
+# Recode so: 1 = bad (event), 0 = good
+credit$Creditability <- ifelse(credit$Creditability == 2, 1, 0)
+
+table(credit$Creditability)
+
+# Train/Test split
+n <- nrow(credit)
+idx_train <- sample(seq_len(n), size = floor(0.70 * n), replace = FALSE)
+train <- credit[idx_train, ]
+test  <- credit[-idx_train, ]
+```
+
+**METHODOLOGY:**  
+I fit a **logistic regression** model to predict `Creditability` using all other variables as predictors. Logistic regression is appropriate because `Creditability` is binary, and the model outputs a predicted probability for the event class.  
+The assignment states that **classifying a bad customer as good** is **5×** worse than **classifying a good customer as bad**.  
+
+So I define:  
+- False Negative (FN): actual bad (1) predicted good (0) → cost = 5  
+- False Positive (FP): actual good (0) predicted bad (1) → cost = 1  
+
+Predict **bad** when:  
+
+$$
+p > \frac{1}{1 + 5} = \frac{1}{6} \approx 0.167
+$$
+So I classify an applicant as **bad** whenever the predicted probability of being bad exceeds **1/6**.  
+
+## MODEL
+```{r logit_fit, message=FALSE, warning=FALSE}
+logit_model <- glm(Creditability ~ ., data = train, family = binomial(link = "logit"))
+summary(logit_model)
+```
+
+## PREDICTIONS (COST-SENSITIVE THRESHOLD)
+```{r eval_cost_sensitive, message=FALSE, warning=FALSE}
+probs <- predict(logit_model, newdata = test, type = "response")
+
+threshold <- 1/6
+threshold
+
+pred_class <- ifelse(probs > threshold, 1, 0)
+
+cm <- table(Predicted = pred_class, Actual = test$Creditability)
+cm
+
+FP <- sum(pred_class == 1 & test$Creditability == 0)
+FN <- sum(pred_class == 0 & test$Creditability == 1)
+cost <- 1*FP + 5*FN
+
+FP
+FN
+cost
+```
+
+**ANALYSIS:**  
+Using the threshold **1/6** shifts the classifier to label applicants as **bad** more often than a standard 0.5 cutoff. This is intentional: it reduces **false negatives** (bad predicted good), the most expensive error under the stated cost ratio.  
+The confusion matrix and the computed total cost quantify performance under this cost structure; the goal is not simply accuracy, but minimizing the weighted misclassification cost.
