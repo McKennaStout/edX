@@ -1,0 +1,205 @@
+---
+title: "Homework 8 (ISYE 6501) - Question 11.1"
+output:
+  pdf_document:
+    latex_engine: xelatex
+---
+Sorry in advance to my peer reviewers! (ᵕ—ᴗ—) I like to write out my reasoning and can be... wordy... But I will try to be even more brief this time after taking the advice from HW7 peers!  
+<!-- ## rmarkdown::render("edX/GTx.ISYE6501/homework/homework8_answers.Rmd") -->  
+
+## Question 11.1 Answer
+I used https://www.overleaf.com/learn and AI to help me shape the code for this question, as I am not as experienced with writing R yet.  
+I did not copy any specific lines of code, I just used it as a helpful reference for me to better understand how best to write it.   
+
+```{r hw8_setup, message=FALSE, warning=FALSE}
+rm(list = ls())
+set.seed(16)
+
+if (!requireNamespace("glmnet", quietly = TRUE)) {
+  install.packages("glmnet", repos = "https://cloud.r-project.org")
+}
+library(glmnet)
+
+crime <- read.table("C:/Users/mstout/OneDrive - AANP/Documents/Workspace.MAIN/edX/GTx.ISYE6501/data/Homework8_ISYE6501/data 11.1/uscrime.txt", header = TRUE)
+
+dim(crime)
+head(crime)
+str(crime)
+
+x <- as.matrix(crime[, names(crime) != "Crime"])
+y <- crime$Crime
+
+x_scaled <- scale(x)
+
+x_center <- attr(x_scaled, "scaled:center")
+x_scale  <- attr(x_scaled, "scaled:scale")
+```
+
+**METHODOLOGY:**  
+This question asks for three regression approaches using the same `uscrime.txt` data set used in earlier homeworks (we are getting really used to this data set, huh?):  
+
+1. **Stepwise regression**  
+2. **Lasso**  
+3. **Elastic Net**  
+
+The response variable is `Crime`, and the remaining 15 variables are candidate predictors.  
+Because the data set is small relative to the number of predictors, this is exactly the kind of setting where variable selection / shrinkage methods can be useful.  
+
+For the **stepwise regression**, I began with the full linear model and used `step()` to perform AIC-based variable selection. This approach is trying to find a smaller model that still fits the data well while penalizing unnecessary complexity.  
+
+For the **Lasso** and **Elastic Net** models, I first scaled the predictors, because regularization penalties depend on coefficient magnitude and would not behave properly if the variables were measured on very different scales. I then used `glmnet`, as required in the assignment.  
+
+For **Lasso**, I used `alpha = 1`, which applies an L1 penalty. This can shrink some coefficients exactly to zero, which makes the model perform variable selection automatically.  
+
+For **Elastic Net**, I used `alpha = 0.5`, which blends ridge and lasso penalties. This is helpful when predictors may be correlated, because Elastic Net tends to spread the shrinkage more smoothly across related variables instead of forcing the model to keep only one.  
+
+I used cross-validation with `cv.glmnet()` to choose the best penalty level `lambda` for both regularized models.  
+
+## 1) Stepwise Regression
+
+```{r stepwise_model, message=FALSE, warning=FALSE}
+full_model <- lm(Crime ~ ., data = crime)
+summary(full_model)
+
+step_model <- step(full_model, direction = "both", trace = 0)
+summary(step_model)
+
+coef(step_model)
+formula(step_model)
+
+step_pred <- predict(step_model, newdata = crime)
+step_sse  <- sum((crime$Crime - step_pred)^2)
+step_sst  <- sum((crime$Crime - mean(crime$Crime))^2)
+step_r2   <- 1 - step_sse / step_sst
+step_rmse <- sqrt(mean((crime$Crime - step_pred)^2))
+
+step_r2
+step_rmse
+```
+
+**ANALYSIS:**  
+The stepwise regression starts from the full linear model and removes / keeps predictors based on AIC. Since AIC penalizes model complexity, the resulting model is usually smaller than the full 15-predictor model from Homework 5.  
+
+In my run, the stepwise model retained a reduced set of predictors rather than all 15 original variables. That is a more reasonable outcome for this data, because the earlier full regression clearly showed signs of overfitting: a relatively small sample size, several large p-values, and unstable prediction intervals.  
+
+Compared with the full regression from Homework 5, the stepwise model should be easier to interpret because it focuses on the variables that appear to contribute the most to the response after penalizing unnecessary complexity. The tradeoff, of course, is that stepwise selection is still a fairly greedy procedure; it does not account for coefficient shrinkage the way regularized regression does, and it can be unstable if the predictors are highly correlated.  
+
+## 2) Lasso Regression
+
+```{r lasso_model, message=FALSE, warning=FALSE}
+# alpha = 1 gives Lasso
+lasso_fit <- glmnet(x_scaled, y, alpha = 1)
+cv_lasso  <- cv.glmnet(x_scaled, y, alpha = 1)
+
+plot(lasso_fit, xvar = "lambda", label = TRUE)
+plot(cv_lasso)
+
+lasso_lambda_min <- cv_lasso$lambda.min
+lasso_lambda_1se <- cv_lasso$lambda.1se
+
+lasso_lambda_min
+lasso_lambda_1se
+
+lasso_coef_min <- coef(cv_lasso, s = "lambda.min")
+lasso_coef_1se <- coef(cv_lasso, s = "lambda.1se")
+
+lasso_coef_min
+lasso_coef_1se
+
+lasso_pred <- predict(cv_lasso, newx = x_scaled, s = "lambda.min")
+lasso_sse  <- sum((y - lasso_pred)^2)
+lasso_sst  <- sum((y - mean(y))^2)
+lasso_r2   <- 1 - lasso_sse / lasso_sst
+lasso_rmse <- sqrt(mean((y - lasso_pred)^2))
+
+lasso_r2
+lasso_rmse
+
+lasso_kept <- rownames(lasso_coef_min)[as.vector(lasso_coef_min != 0)]
+lasso_kept
+```
+
+**ANALYSIS:**  
+Lasso adds an L1 penalty to the least-squares objective, so it not only shrinks coefficient magnitudes, but can also force some coefficients to exactly zero. That makes it useful here because we have a modest number of observations and several predictors that appear to overlap in what they explain.  
+
+After scaling the predictors and selecting `lambda` by cross-validation, the Lasso model kept only a subset of the predictors as active terms at the chosen penalty level. Predictors whose coefficients were shrunk all the way to zero were effectively removed from the model.  
+
+This is one major difference from stepwise regression: stepwise chooses variables through a search procedure over candidate linear models, while Lasso keeps all variables in one optimization problem and lets the penalty decide which coefficients survive. Because of that, Lasso often gives a more stable answer in the presence of multicollinearity.  
+
+Another useful way to think about the Lasso results is that the model is balancing two competing goals:  
+
+1. Fit the observed crime data well  
+2. Keep the coefficient vector simple / small  
+
+The selected `lambda.min` value gives the penalty that minimizes cross-validated error, while `lambda.1se` gives a slightly more conservative model that is often simpler.  
+
+## 3) Elastic Net Regression
+
+```{r elastic_net_model, message=FALSE, warning=FALSE}
+# alpha = 0.5 gives both ridge + lasso penalties
+elastic_fit <- glmnet(x_scaled, y, alpha = 0.5)
+cv_elastic  <- cv.glmnet(x_scaled, y, alpha = 0.5)
+
+plot(elastic_fit, xvar = "lambda", label = TRUE)
+plot(cv_elastic)
+
+elastic_lambda_min <- cv_elastic$lambda.min
+elastic_lambda_1se <- cv_elastic$lambda.1se
+
+elastic_lambda_min
+elastic_lambda_1se
+
+elastic_coef_min <- coef(cv_elastic, s = "lambda.min")
+elastic_coef_1se <- coef(cv_elastic, s = "lambda.1se")
+
+elastic_coef_min
+elastic_coef_1se
+
+elastic_pred <- predict(cv_elastic, newx = x_scaled, s = "lambda.min")
+elastic_sse  <- sum((y - elastic_pred)^2)
+elastic_sst  <- sum((y - mean(y))^2)
+elastic_r2   <- 1 - elastic_sse / elastic_sst
+elastic_rmse <- sqrt(mean((y - elastic_pred)^2))
+
+elastic_r2
+elastic_rmse
+
+elastic_kept <- rownames(elastic_coef_min)[as.vector(elastic_coef_min != 0)]
+elastic_kept
+```
+
+**ANALYSIS:**  
+Elastic Net combines the L1 penalty from Lasso and the L2 penalty from ridge regression. That makes it especially attractive when predictors are correlated, because ridge tends to stabilize the coefficient estimates while the lasso portion still encourages sparsity.  
+
+In this crime data set, many of the socioeconomic / demographic predictors are related to one another, so Elastic Net is a sensible middle ground. Compared with Lasso, Elastic Net will usually retain more predictors with shrunken coefficients instead of zeroing out as many of them. That means the Elastic Net model may be a little less sparse, but also potentially more stable when predictor information is shared across variables.  
+
+Using cross-validation to choose `lambda`, I can compare the active set of predictors from the Elastic Net model with the active set from Lasso. In general, I would expect the Elastic Net model to keep a broader group of predictors while shrinking them more smoothly.  
+
+## Final Comparison of the Three Models
+
+```{r model_comparison, message=FALSE, warning=FALSE}
+comparison <- data.frame(
+  Model = c("Stepwise", "Lasso", "Elastic Net"),
+  R_Squared = c(step_r2, lasso_r2, elastic_r2),
+  RMSE = c(step_rmse, lasso_rmse, elastic_rmse)
+)
+
+comparison
+```
+
+**OVERALL ANALYSIS:**  
+All three approaches are trying to solve the same basic problem: predicting `Crime` from the 15 available predictors without overfitting such a small data set. But they do it in different ways.  
+
+- **Stepwise regression** reduces the model by adding / removing variables based on AIC. It is easy to interpret, but can be unstable because small data changes can alter which variables are selected.  
+- **Lasso** shrinks coefficients and can set some exactly to zero, so it performs variable selection automatically. This often gives a cleaner model than ordinary least squares.  
+- **Elastic Net** also shrinks coefficients, but because it combines L1 and L2 penalties, it can behave better than Lasso when predictors are correlated.  
+
+For this specific data set, I would trust the **regularized models** more than the original full regression from Homework 5, because the full model clearly used too many predictors relative to the number of observations. Between the two regularized approaches, I would generally favor **Elastic Net** when I want a more stable model under multicollinearity, and **Lasso** when I want a more aggressive variable-selection result.  
+
+So, if my main priority were:  
+
+- **Interpretability through a smaller classical linear model:** I would choose **stepwise regression**  
+- **Automatic sparse variable selection:** I would choose **Lasso**  
+- **A balanced regularized model for correlated predictors:** I would choose **Elastic Net**  
+
+Overall, this homework shows very clearly why later-course methods are useful: the original all-predictor regression can fit the training data well, but shrinkage / selection methods usually give a more reasonable and more defensible model when the sample is small and predictors overlap.  

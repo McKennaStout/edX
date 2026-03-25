@@ -1,0 +1,105 @@
+---
+title: "Homework 9 (ISYE 6501) - Question 12.1 & 12.2"
+output:
+  pdf_document:
+    latex_engine: xelatex
+---
+Sorry in advance to my peer reviewers! (ᵕ—ᴗ—) I like to write out my reasoning and can be... wordy... But I will try to be even more brief this time after taking the advice from HW7 peers!  
+<!-- ## rmarkdown::render("edX/GTx.ISYE6501/homework/homework9_answers.Rmd") -->  
+
+## Question 12.1 Answer
+I used https://www.overleaf.com/learn and AI to help me shape the code for this question, as I am not as experienced with writing R yet.  
+I did not copy any specific lines of code, I just used it as a helpful reference for me to better understand how best to write it.   
+
+A design of experiments approach for something relevant to my life would be appropriate for improving response rates to outreach emails at work.  
+For example, suppose a team wants to improve the percentage of members who respond to a renewal reminder email. Instead of changing only one thing at a time, a DOE approach would let the team test several factors systematically and learn both:  
+1. which factors matter most on their own, and  
+2. whether combinations of factors interact with each other.  
+
+Possible factors could include:  
+- whether the subject line is formal or informal,  
+- whether the email is sent in the morning or afternoon,  
+- whether a deadline is mentioned,  
+- whether the sender is shown as a generic department or a named staff member,  
+- whether a follow-up reminder is sent.  
+
+The response variable could be something like:  
+
+- open rate,  
+- click-through rate,  
+- reply rate, or  
+- completed renewal rate.  
+
+A DOE approach would be better than changing one feature at a time because multiple parts of the message may matter simultaneously. For example, mentioning a deadline might work especially well only when combined with a follow-up reminder, or a more personal sender name might matter more for one style of subject line than another. A structured experiment would help estimate those effects more efficiently and objectively.  
+
+## Question 12.2 Answer
+This question asks for a **fractional factorial design** for 10 yes/no house features, using only 16 houses instead of all possible combinations.  
+
+I used the `FrF2` package in R, as requested. The `FrF2` function returns a design matrix with values of `1` for "include the feature" and `-1` for "do not include the feature."  
+
+```{r q12_2_setup, message=FALSE, warning=FALSE}
+rm(list = ls())
+
+if (!requireNamespace("FrF2", quietly = TRUE)) {
+  install.packages("FrF2", repos = "https://cloud.r-project.org")
+}
+
+library(FrF2)
+```
+
+```{r q12_2_design, message=FALSE, warning=FALSE}
+feature_names <- c(
+  "LargeYard",
+  "SolarRoof",
+  "FinishedBasement",
+  "SmartHome",
+  "Pool",
+  "Garage",
+  "RenovatedKitchen",
+  "HomeOffice",
+  "EVCharger",
+  "CornerLot"
+)
+
+house_design <- FrF2(
+  nruns = 16,
+  nfactors = 10,
+  factor.names = feature_names,
+  randomize = FALSE
+)
+
+house_design
+```
+
+The table above is the fractional factorial design. Each row represents one fictitious house to show to potential buyers, and each column is one feature. A value of:  
+
+- `1` means the feature is included,  
+- `-1` means the feature is not included.  
+
+For a cleaner version to submit as a house-feature table, I converted the output to a data frame below and added a house number.  
+
+```{r q12_2_table, message=FALSE, warning=FALSE}
+house_table <- as.data.frame(house_design)
+house_table$House <- 1:nrow(house_table)
+house_table <- house_table[, c("House", feature_names)]
+
+house_table
+```
+
+If I wanted to describe the design in words, I would say that this is a 16-run two-level fractional factorial design for 10 binary factors.  
+It lets the agent estimate the most important feature effects much more efficiently than testing all `2^{10} = 1024` possible house combinations.  
+
+For readability, here is the same design translated from `1 / -1` into `Yes / No`.  
+
+```{r q12_2_yes_no, message=FALSE, warning=FALSE}
+house_table_readable <- house_table
+house_table_readable[feature_names] <- lapply(
+  house_table_readable[feature_names],
+  function(x) ifelse(x == 1, "Yes", "No")
+)
+
+house_table_readable
+```
+
+**ANALYSIS:**  
+A full factorial experiment with 10 yes/no features would require 1024 different houses, which is wayyyy too many for this survey. The 16-house fractional factorial design is a practical compromise that still spreads the feature combinations across the survey in a systematic way. That allows the real estate agent to learn which house features appear to contribute most to perceived market value without needing to show every possible combination.

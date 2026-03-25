@@ -1,0 +1,135 @@
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Preformatted
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.pagesizes import letter
+from reportlab.lib.units import inch
+
+# =========================
+# OUTPUT PATH
+# =========================
+output_path = r"C:\Users\mstout\OneDrive - AANP\Documents\Workspace.MAIN\edX\GTx.ISYE6501\homework\homework9_answers_13.1.pdf"
+
+# =========================
+# DOCUMENT SETUP
+# =========================
+doc = SimpleDocTemplate(
+    output_path,
+    pagesize=letter,
+    rightMargin=1*inch,
+    leftMargin=1*inch,
+    topMargin=1*inch,
+    bottomMargin=1*inch
+)
+
+styles = getSampleStyleSheet()
+
+title_style = ParagraphStyle(
+    name="Title",
+    parent=styles["Heading1"],
+    spaceAfter=16
+)
+
+header_style = ParagraphStyle(
+    name="Header",
+    parent=styles["Heading2"],
+    spaceAfter=10
+)
+
+body_style = ParagraphStyle(
+    name="Body",
+    parent=styles["Normal"],
+    leading=14,
+    spaceAfter=10
+)
+
+mono_style = ParagraphStyle(
+    name="Mono",
+    parent=styles["Normal"],
+    fontName="Courier",
+    fontSize=9,
+    leading=12,
+    spaceAfter=10
+)
+
+content = []
+
+# =========================
+# TITLE
+# =========================
+content.append(Paragraph("Homework 9 (ISYE 6501) — Questions 13.1 and 13.2", title_style))
+
+# =========================
+# QUESTION 13.1
+# =========================
+content.append(Paragraph("Question 13.1", header_style))
+
+q13_1_text = """
+<b>Binomial:</b> number of customers out of 20 contacted who agree to schedule a product demo.<br/>
+<b>Geometric:</b> number of sales calls made until the first successful sale.<br/>
+<b>Poisson:</b> number of cars arriving at a drive-through in a 10-minute period.<br/>
+<b>Exponential:</b> time between consecutive customer arrivals at a service desk.<br/>
+<b>Weibull:</b> lifetime of a machine part before failure.
+"""
+
+content.append(Paragraph(q13_1_text, body_style))
+
+# =========================
+# QUESTION 13.2
+# =========================
+content.append(Paragraph("Question 13.2", header_style))
+
+q13_2_text = """
+A discrete-event simulation was built in Python using only the standard library.
+
+Passengers arrive according to a Poisson process at a rate of 5 per minute.
+Stage 1 consists of ID and boarding-pass checking with exponential service time (mean 0.75 minutes).
+Stage 2 consists of personal screening, where each passenger joins the shortest available queue.
+
+Screening time follows a Uniform(0.5, 1.0) distribution.
+
+Configurations from 1 to 6 servers at each stage were tested using multiple replications.
+The performance metric is average total waiting time, excluding the first 200 minutes as warmup.
+"""
+
+content.append(Paragraph(q13_2_text, body_style))
+
+# =========================
+# RESULTS TABLE
+# =========================
+table_text = """Simulation Results (Average Wait in Minutes)
+
+ID  SCAN   AVG_WAIT
+-----------------------
+ 1    1     3079.472
+ 1    2     3038.747
+ 1    3     3031.165
+ 1    4     3028.205
+ 2    2      981.173
+ 3    3      292.081
+ 4    4        4.144
+ 5    5        0.500
+ 6    6        0.149
+"""
+
+content.append(Preformatted(table_text, mono_style))
+
+# =========================
+# CONCLUSION
+# =========================
+conclusion_text = """
+<b>Conclusion:</b><br/>
+The smallest configuration that achieves an average waiting time below 15 minutes is 4 ID checkers and 4 screening stations.
+
+The estimated average waiting time for this configuration is approximately 4.144 minutes.
+
+Configurations with only 3 servers at either stage are unstable because total service capacity is below the arrival rate.
+"""
+
+content.append(Paragraph(conclusion_text, body_style))
+
+# =========================
+# BUILD PDF
+# =========================
+doc.build(content)
+
+print("PDF generated successfully at:")
+print(output_path)
